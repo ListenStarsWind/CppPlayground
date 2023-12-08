@@ -2,13 +2,21 @@
 #include<stdio.h>
 int main()
 {
-	int i = 9;
-	int k = 1;
-	while (i < 99)
+	int i = 0;
+	int j = 1;
+	int k = 0;
+	for (i = 0; i < 99; i++)
 	{
-		k++;
-		i += 10;
+		if (9 == j % 10)
+		{
+			k++;
+		}
+		if (9 == j / 10)
+		{
+			k++;
+		}
+		j++;
 	}
 	printf("%d\n", k);
-	return 0;
+	printf("%d", j);
 }
