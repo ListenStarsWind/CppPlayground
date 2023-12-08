@@ -2,56 +2,38 @@
 #include<stdio.h>
 int main()
 {
+	int a = 0;
+	int b = 0;
+	int c = 0;
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	printf("请输入数据");
-	scanf("%d %d %d", &i, &j, &k);
-	if (i > j && i > k)
+	printf("请输入三个数\n");
+	while (scanf("%d %d %d", &a, &b, &c) != EOF)
 	{
-		printf("%d ", i);
-		if (j > k)
+		if (a < b)
 		{
-			printf("%d ", j);
-			printf("%d ", k);
+			i = a;
+			a = b;
+			b = i;
 		}
-		else
+		if (a < c)
 		{
-			printf("%d ", k);
-			printf("%d ", j);
+			j = a;
+			a = c;
+			c = j;
 		}
-
+		if (b < c)
+		{
+			k = b;
+			b = c;
+			c = k;
+		}
+		printf("%d %d %d\n", a, b, c);
 	}
-	if (j > i && j > k)
-	{
-		printf("%d ", j);
-		if (i > k)
-		{
-			printf("%d ", i);
-			printf("%d ", k);
-		}
-		else
-		{
-			printf("%d ", k);
-			printf("%d ", i);
-		}
-
-	}
-	if (k > i && k > j)
-	{
-		printf("%d ", k);
-		if (i > j)
-		{
-			printf("%d ", i);
-			printf("%d ", j);
-		}
-		else
-		{
-			printf("%d ", j);
-			printf("%d ", i);
-		}
-
-	}
-
 	return 0;
 }
+
+
+
+
