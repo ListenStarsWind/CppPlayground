@@ -4,6 +4,7 @@
 #include<stdio.h>
 int j = 0;
 int s = 0;
+int k = 5;
 void game()
 {
 	while (1)
@@ -11,14 +12,26 @@ void game()
 		printf("请输入您猜的数值\n");
 		scanf("%d", &j);
 		if (j < s)
+		{
 			printf("猜小了\n");
+			k--;
+		}
 
 		if (j > s)
+		{
 			printf("猜大了\n");
+			k--;
+		}
 
 		if (j == s)
 		{
 			printf("恭喜您猜对了，随机数就是%d。\n", s);
+			break;
+		}
+		if (0 == k)
+		{
+			k = 5;
+			printf("您的运气真差呢，重新游戏吧\n");
 			break;
 		}
 	}
