@@ -25,8 +25,9 @@ int main()
 		printf("%d ", arr[i]);
 	printf("\n这个数组有%d个元素\n", j);
 	for (i = 0; i <= (j - 1); i++)
-		printf("arr[%d]=%p\n", i, arr[i]);
-
+		printf("arr[%d]=%p\n", i, &arr[i]);
+	/*char str[] = "hello bit ";
+	printf("%d %d\n", sizeof(str), strlen(str));*/
 
 
 	return 0;
