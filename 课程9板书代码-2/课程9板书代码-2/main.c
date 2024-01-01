@@ -12,6 +12,7 @@ int main()
 	char arr1[] = { "****Hello Word****" };
 	char arr2[] = { "******************" };
 	i = sizeof(arr1) / sizeof(arr1[0]);
+	//为什么要减2呢，因为要减去\0,否则会先出现H再出现d，Hd不会同时出现。
 	for (left = 0, right = i - 2; left <= right; left++, right--)
 	{
 		arr2[left] = arr1[left];
