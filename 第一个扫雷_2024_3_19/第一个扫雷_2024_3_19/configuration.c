@@ -173,6 +173,8 @@ static void detection(char arrA[40][40], char arrF[40][40])
 {
 	int i, j;
 	int a, b;
+	int flag = 3;
+
 	int k = 0;
 	int c = Row * Column - Mine;
 	do
@@ -188,6 +190,12 @@ static void detection(char arrA[40][40], char arrF[40][40])
 			{
 				printf("这是一个地雷，你被炸死了。\n");
 				break;
+			}
+			else if (arrF[i][j] == '#')
+			{
+				printf("这个地方已经被你标记为‘#’了，再输入一次坐标吧。");
+				continue;
+
 			}
 			else
 			{
@@ -210,10 +218,44 @@ static void detection(char arrA[40][40], char arrF[40][40])
 			printf("此坐标非法，请输入正确坐标。");
 			continue;
 		}
+
+		printf("\n");
+		printf("=====================================================\n");
+		printf("这是排雷模式，可以把你认为疑似为雷的地方标为‘#’。\n");
+		printf("你也可以选择跳过该模式。\n");
+		printf("输入1，进入模式，输入0，跳过该模式；\n");
+		scanf("%d", &flag);
+		if (flag == 0)
+			continue;
+		else
+		{
+			while (1)
+			{
+
+				printf("已经进入排雷模式，请输入你要标注的坐标：\n");
+				int m, n;
+				scanf("%d%d", &m, &n);
+				if ((m > 0) && (m <= Row) && (n > 0) && (n <= Column))//判断坐标是否合法。
+				{
+					arrF[m][n] = '#';
+					break;
+				}
+				else
+				{
+					printf("此坐标非法，请输入正确坐标。");
+					continue;
+				}
+
+			}
+
+		}
+
 	} while (c);
 	if (c == 0)
 		printf("恭喜你，避开了所有的雷。");
 }
+
+
 
 void game(void)//游戏内容函数。
 {
