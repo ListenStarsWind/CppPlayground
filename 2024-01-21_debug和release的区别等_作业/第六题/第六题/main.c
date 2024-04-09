@@ -23,7 +23,7 @@ void print(int n)
 int main()
 {
 	int n;
-	scanf("%d", &n);
+	scanf_s("%d", &n);
 	print(n);
 	return 0;
 }

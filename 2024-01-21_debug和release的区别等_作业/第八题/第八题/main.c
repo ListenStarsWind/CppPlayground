@@ -22,7 +22,7 @@ int calculate(int m)
 int main()
 {
 	int n;
-	scanf("%d", &n);
+	scanf_s("%d", &n);
 	printf("%d", calculate(n));
 	return 0;
 }

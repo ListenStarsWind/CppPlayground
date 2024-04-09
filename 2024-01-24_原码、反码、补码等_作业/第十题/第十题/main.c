@@ -26,7 +26,7 @@ int Cpae(int m, int n)//compare(比较)的缩写
 			count++;
 		}
 	}
-	return count++;
+	return count;
 }
 
 //测试函数功能
