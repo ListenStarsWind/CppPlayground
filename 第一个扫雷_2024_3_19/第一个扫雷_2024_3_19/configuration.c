@@ -262,7 +262,7 @@ void game(void)//游戏内容函数。
 	ArrayInitialization(ActualArray, '0');
 	ArrayInitialization(FormalArray, '*');
 	LayingMines(ActualArray);
-	PrintingArray(ActualArray);//调试完毕后注释掉，已经调试完毕。取消注释将进入作弊模式。
+	/*PrintingArray(ActualArray);*/  //调试完毕后注释掉，已经调试完毕。取消注释将进入作弊模式。
 	/*SelfTestFunction(ActualArray);*///调试完毕后注释掉，已经调试完毕。
 	detection(ActualArray, FormalArray);
 }

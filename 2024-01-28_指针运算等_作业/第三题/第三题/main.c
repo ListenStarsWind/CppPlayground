@@ -36,7 +36,12 @@ int my_strlen(const char* p)//指针变量用const修饰，防止指向内容遭
 // 清除缓冲区。
 int main()
 {
-	char arr[10000] = { '0' };
+	char arr[20] = { '0' };
+	scanf("%[^\n]", &arr);
+
+	int i = my_strlen(arr);
+	printf("%d", i);
+	/*char arr[10000] = { '0' };
 	while (EOF != scanf("%[^\n]", arr))
 	{
 		int len = my_strlen(arr);
@@ -52,7 +57,7 @@ int main()
 		printf("%s\n", arr);
 		char c_tmp;
 		while ((c_tmp = getchar() != '\n') && c_tmp != EOF);
-	}
+	}*/
 	return 0;
 }
 #if 0
