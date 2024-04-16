@@ -4,8 +4,14 @@
  * 【文件标识】：
  * ========================================================================================
  * 【当前作者】：	听风若依
- * 【当前版本】：	V1.1
- * 【完成日期】：	2024年  4月9日
+ * 【指导老师】：	比特高博
+ * 【当前版本】：	V1.2
+ * 【完成日期】：	2024年  4月16日
+ * 【更新内容】：	使用gets(arr)代替scang("%[^\n]",arr)(另外注意此种方法不用清除缓冲区)
+ * ========================================================================================
+ * 【历史作者】：	听风若依
+ * 【历史版本】：	V1.1
+ * 【历史日期】：	2024年  4月9日
  * 【更新内容】：	修复了不能多组输入的bug。
  * ========================================================================================
  * 【历史作者】：	听风若依
@@ -36,12 +42,31 @@ int my_strlen(const char* p)//指针变量用const修饰，防止指向内容遭
 // 清除缓冲区。
 int main()
 {
-	char arr[20] = { '0' };
-	scanf("%[^\n]", &arr);
+	char arr[10000] = { '0' };
+	while (gets(arr) != EOF)
+	{
+		int len = my_strlen(arr);
+		int left = 0;
+		int right = 0;
+		int i = 0;
+		for (left = 0, right = len - 1; left <= right; left++, right--)
+		{
+			char interchange = arr[left];
+			arr[left] = arr[right];
+			arr[right] = interchange;
+		}
+		printf("%s\n", arr);
 
-	int i = my_strlen(arr);
-	printf("%d", i);
-	/*char arr[10000] = { '0' };
+	}
+	return 0;
+}
+
+
+//1.2内容
+#if 0
+int main()
+{
+	char arr[10000] = { '0' };
 	while (EOF != scanf("%[^\n]", arr))
 	{
 		int len = my_strlen(arr);
@@ -57,10 +82,10 @@ int main()
 		printf("%s\n", arr);
 		char c_tmp;
 		while ((c_tmp = getchar() != '\n') && c_tmp != EOF);
-	}*/
+	}
 	return 0;
 }
-#if 0
+
 //1.0内容：
 int main()
 {
