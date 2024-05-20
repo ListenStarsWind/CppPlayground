@@ -5,12 +5,12 @@
  * ========================================================================================
  * 【当前作者】：	听风若依
  * 【当前版本】：	V1.0
- * 【完成日期】：	2024年  5月19日
- * 【更新内容】：
+ * 【完成日期】：	2024年  5月20日
+ * 【更新内容】：代码效率优化
  * ========================================================================================
  * 【历史作者】：	听风若依
  * 【历史版本】：	V1.
- * 【历史日期】：	2024年  月日
+ * 【历史日期】：	2024年  5月19日
  * ========================================================================================
  * 【开发平台】：	VS2022
  * 【程序内容】：strncpy的模拟实现
@@ -20,7 +20,7 @@
 #include<assert.h>
 #include<string.h>
 
-
+# if 0
 char* my_strncpy(char* destination, const char* source, size_t num)
 {
 	assert(destination && source);
@@ -47,13 +47,33 @@ char* my_strncpy(char* destination, const char* source, size_t num)
 	}
 	return ret;
 }
+#endif
+
+char* MyStrncpy(char* destination, const char* source, size_t num)
+{
+	assert(destination && source);
+	char* ret = destination;
+	size_t i = 0;
+	for (; source[i] != '\0' && i < num; i++)
+	{
+		destination[i] = source[i];
+	}
+	if (num > i)
+	{
+		for (; i < num; i++)
+		{
+			destination[i] = 0;
+		}
+	}
+	return ret;
+}
 
 int main()
 {
 	char arr[50] = "xxxxxxxxxxxxxxxxxxxxxxx";
 	char* str = "hello word";
 	size_t n = strlen(str);
-	my_strncpy(arr, str, n - 2);
+	MyStrncpy(arr, str, n + 2);
 	printf("%s\n", arr);
 	return 0;
 }
