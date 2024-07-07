@@ -109,6 +109,27 @@ void test5()
 	SListPrintf(SListHead);
 }
 
+//单元测试5：测试函数FindNode
+//Unit Test 1: Test the FindNode function
+void test5()
+{
+	SListNode* SListHead = NULL;
+	InsertHead(&SListHead, 3);
+	InsertHead(&SListHead, 2);
+	InsertHead(&SListHead, 1);
+	InsertHead(&SListHead, 0);
+	SListPrintf(SListHead);
+	SListNode* PtrTemp = FindNode(SListHead, 0);
+	if (PtrTemp)
+	{
+		SListPrintf(PtrTemp);
+	}
+	else
+	{
+		printf("cannot find\n");
+	}
+}
+
 int main()
 {
 	test5();

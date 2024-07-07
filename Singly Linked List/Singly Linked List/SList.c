@@ -104,3 +104,14 @@ int DelateHead(SListNode** PPtrHead)
 	*PPtrHead = PtrTemp;
 	return 0;
 }
+
+SListNode* FindNode(SListNode* PtrHead, SListDataType x)
+{
+	SListNode* PtrTemp = PtrHead;
+	while (PtrTemp != NULL && PtrTemp->data != x)
+	{
+		PtrTemp = PtrTemp->next;
+	}
+	return PtrTemp;
+}
+

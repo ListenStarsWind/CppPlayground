@@ -64,3 +64,9 @@ int DelateTail(SListNode** PPtrHead);
 //如果没有节点可被删除，则返回EOF，否则返回0
 //If there are no nodes to delete, return EOF; otherwise, return 0
 int DelateHead(SListNode** PPtrHead);
+
+//查找节点
+//Find node
+//找到则返回该节点的指针，否则，返回空指针NULL
+//If found, return a pointer to the node; otherwise, return a NULL pointer
+SListNode* FindNode(SListNode* PtrHead, SListDataType x);
