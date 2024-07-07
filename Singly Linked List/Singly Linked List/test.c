@@ -89,8 +89,28 @@ void test4_1()
 	SListPrintf(SListHead);
 }
 
+//单元测试5：测试函数DelateHead
+//Unit Test 1: Test the DelateHead function
+void test5()
+{
+	SListNode* SListHead = NULL;
+	InsertHead(&SListHead, 3);
+	InsertHead(&SListHead, 2);
+	InsertHead(&SListHead, 1);
+	InsertHead(&SListHead, 0);
+	SListPrintf(SListHead);
+	DelateHead(&SListHead);
+	SListPrintf(SListHead);
+	DelateHead(&SListHead);
+	SListPrintf(SListHead);
+	DelateHead(&SListHead);
+	SListPrintf(SListHead);
+	DelateHead(&SListHead);
+	SListPrintf(SListHead);
+}
+
 int main()
 {
-	test4_1();
+	test5();
 	return 0;
 }

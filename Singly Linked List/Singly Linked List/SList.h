@@ -58,3 +58,9 @@ void InsertHead(SListNode** PPtrHead, SListDataType x);
 //如果没有节点可被删除，则返回EOF，否则返回0
 //If there are no nodes to delete, return EOF; otherwise, return 0
 int DelateTail(SListNode** PPtrHead);
+
+//删除头部节点
+//Delete the head node
+//如果没有节点可被删除，则返回EOF，否则返回0
+//If there are no nodes to delete, return EOF; otherwise, return 0
+int DelateHead(SListNode** PPtrHead);

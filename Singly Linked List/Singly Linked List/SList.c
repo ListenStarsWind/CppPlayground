@@ -91,3 +91,16 @@ int DelateTail(SListNode** PPtrHead)
 	}
 	return 0;
 }
+
+int DelateHead(SListNode** PPtrHead)
+{
+	assert(PPtrHead);
+	if (*PPtrHead == NULL)
+	{
+		return EOF;
+	}
+	SListNode* PtrTemp = (*PPtrHead)->next;
+	free(*PPtrHead);
+	*PPtrHead = PtrTemp;
+	return 0;
+}
