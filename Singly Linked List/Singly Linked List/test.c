@@ -152,9 +152,24 @@ void test7()
 	SListPrintf(SListHead);
 }
 
+//单元测试8：测试函数InBefoPosi
+//Unit Test 8: Test the InBefoPosi function
+void test8()
+{
+	SListNode* SListHead = NULL;
+	InsertHead(&SListHead, 3);
+	InsertHead(&SListHead, 1);
+	SListPrintf(SListHead);
+	SListNode* TempNode = FindNode(SListHead, 3);
+	InBefoPosi(&SListHead, TempNode, 2);
+	SListPrintf(SListHead);
+	TempNode = FindNode(SListHead, 1);
+	InBefoPosi(&SListHead, TempNode, 0);
+	SListPrintf(SListHead);
+}
 
 int main()
 {
-	test7();
+	test8();
 	return 0;
 }
