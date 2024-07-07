@@ -173,14 +173,14 @@ void test8()
 void test9()
 {
 	SListNode* SListHead = NULL;
-	InsertHead(&SListHead, 3);
-	InsertHead(&SListHead, 1);
+	InsertHead(&SListHead, 2);
+	InsertHead(&SListHead, 0);
 	SListPrintf(SListHead);
-	SListNode* TempNode = FindNode(SListHead, 1);
-	InAftPosi(TempNode, 0);
+	SListNode* TempNode = FindNode(SListHead, 0);
+	InAftPosi(TempNode, 1);
 	SListPrintf(SListHead);
-	TempNode = FindNode(SListHead, 3);
-	InAftPosi(TempNode, 2);
+	TempNode = FindNode(SListHead, 2);
+	InAftPosi(TempNode, 3);
 	SListPrintf(SListHead);
 }
 
