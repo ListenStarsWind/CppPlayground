@@ -169,3 +169,11 @@ void  DePosi(SListNode** PPtrHead, SListNode* TargetPtr)
 		printf("Target does not exist\n");
 	}
 }
+
+void InAftPosi(SListNode* TargetPtr, SListDataType x)
+{
+	assert(TargetPtr);
+	SListNode* NewNode = CreateNode(x);
+	NewNode->next = TargetPtr->next;
+	TargetPtr->next = NewNode;
+}

@@ -168,8 +168,24 @@ void test8()
 	SListPrintf(SListHead);
 }
 
+//单元测试9：测试函数InAftPosi
+//Unit Test 9: Test the InAftPosi function
+void test9()
+{
+	SListNode* SListHead = NULL;
+	InsertHead(&SListHead, 3);
+	InsertHead(&SListHead, 1);
+	SListPrintf(SListHead);
+	SListNode* TempNode = FindNode(SListHead, 1);
+	InAftPosi(TempNode, 0);
+	SListPrintf(SListHead);
+	TempNode = FindNode(SListHead, 3);
+	InAftPosi(TempNode, 2);
+	SListPrintf(SListHead);
+}
+
 int main()
 {
-	test8();
+	test9();
 	return 0;
 }
