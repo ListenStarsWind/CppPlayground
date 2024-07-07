@@ -30,7 +30,7 @@ void test1()
 }
 
 //单元测试2：测试函数InsertTail
-//Unit Test 1: Test the InsertTail function
+//Unit Test 2: Test the InsertTail function
 void test2()
 {
 	SListNode* SListHead = NULL;
@@ -43,7 +43,7 @@ void test2()
 
 
 //单元测试3：测试函数InsertHead
-//Unit Test 1: Test the InsertHead function
+//Unit Test 3: Test the InsertHead function
 void test3()
 {
 	SListNode* SListHead = NULL;
@@ -55,7 +55,7 @@ void test3()
 }
 
 //单元测试4：测试函数DelateTail
-//Unit Test 1: Test the DelateTail function
+//Unit Test 4: Test the DelateTail function
 void test4_0()
 {
 	SListNode* SListHead = NULL;
@@ -90,7 +90,7 @@ void test4_1()
 }
 
 //单元测试5：测试函数DelateHead
-//Unit Test 1: Test the DelateHead function
+//Unit Test 5: Test the DelateHead function
 void test5()
 {
 	SListNode* SListHead = NULL;
@@ -109,9 +109,9 @@ void test5()
 	SListPrintf(SListHead);
 }
 
-//单元测试5：测试函数FindNode
-//Unit Test 1: Test the FindNode function
-void test5()
+//单元测试6：测试函数FindNode
+//Unit Test 6: Test the FindNode function
+void test6()
 {
 	SListNode* SListHead = NULL;
 	InsertHead(&SListHead, 3);
@@ -119,7 +119,7 @@ void test5()
 	InsertHead(&SListHead, 1);
 	InsertHead(&SListHead, 0);
 	SListPrintf(SListHead);
-	SListNode* PtrTemp = FindNode(SListHead, 0);
+	SListNode* PtrTemp = FindNode(SListHead, 5);
 	if (PtrTemp)
 	{
 		SListPrintf(PtrTemp);
@@ -130,8 +130,31 @@ void test5()
 	}
 }
 
+//单元测试7：测试函数DePosi
+//Unit Test 7: Test the DePosi function
+void test7()
+{
+	SListNode* SListHead = NULL;
+	InsertHead(&SListHead, 3);
+	InsertHead(&SListHead, 2);
+	InsertHead(&SListHead, 1);
+	InsertHead(&SListHead, 0);
+	SListPrintf(SListHead);
+	SListNode* TempNode = FindNode(SListHead, 3);
+	DePosi(&SListHead, TempNode);
+	SListPrintf(SListHead);
+	InsertTail(&SListHead, 3);
+	TempNode = FindNode(SListHead, 0);
+	DePosi(&SListHead, TempNode);
+	SListPrintf(SListHead);
+	TempNode = FindNode(SListHead, 2);
+	DePosi(&SListHead, TempNode);
+	SListPrintf(SListHead);
+}
+
+
 int main()
 {
-	test5();
+	test7();
 	return 0;
 }

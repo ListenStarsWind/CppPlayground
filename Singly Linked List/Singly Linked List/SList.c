@@ -115,3 +115,34 @@ SListNode* FindNode(SListNode* PtrHead, SListDataType x)
 	return PtrTemp;
 }
 
+void InBefoPosi(SListNode** PPtrHead, SListNode* TargetPtr, SListDataType x)
+{
+
+}
+
+void  DePosi(SListNode** PPtrHead, SListNode* TargetPtr)
+{
+	SListNode* TempPtr = *PPtrHead;
+	SListNode* LastPtr = *PPtrHead;
+	while (TempPtr != TargetPtr && TempPtr != NULL)
+	{
+		LastPtr = TempPtr;
+		TempPtr = TempPtr->next;
+	}
+	if (TempPtr == *PPtrHead)
+	{
+		*PPtrHead = TempPtr->next;
+		free(TempPtr);
+		TempPtr = NULL;
+	}
+	else if (TempPtr != NULL)
+	{
+		LastPtr->next = TempPtr->next;
+		free(TempPtr);
+		TempPtr = NULL;
+	}
+	else
+	{
+		printf("Target does not exist\n");
+	}
+}

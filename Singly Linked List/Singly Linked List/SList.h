@@ -70,3 +70,11 @@ int DelateHead(SListNode** PPtrHead);
 //找到则返回该节点的指针，否则，返回空指针NULL
 //If found, return a pointer to the node; otherwise, return a NULL pointer
 SListNode* FindNode(SListNode* PtrHead, SListDataType x);
+
+//在指定位置之前插入数据
+//Insert data before the specified position
+void InBefoPosi(SListNode** PPtrHead, SListNode* TargetPtr, SListDataType x);
+
+//删除指定位置数据
+//Delete data at the specified position
+void DePosi(SListNode** PPtrHead, SListNode* TargetPtr);

@@ -79,9 +79,17 @@
 
 单元测试6：
 
+[初始状态](https://gitee.com/listen-to-the-wind-ruoyi/routine/commit/5d76c398319e2421a0ef0da73b16c3e11c750003)
+
+第一次运行：无法运行，原因，已有函数test5；
+
+第二次运行：成功
+
+
+
+单元测试7：
+
 [初始状态]()
-
-
 
 
 
