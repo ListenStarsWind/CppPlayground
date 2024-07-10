@@ -82,3 +82,4 @@ void DePosi(SListNode** PPtrHead, SListNode* TargetPtr);
 //在指定位置之后插入数据
 //Insert data after the specified position
 void InAftPosi(SListNode* TargetPtr, SListDataType x);
+
