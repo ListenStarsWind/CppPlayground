@@ -20,7 +20,37 @@ struct ListNode
 ////////////////////////////////////////////////////////////////
 
 typedef struct ListNode ListNode, * PListNode;
-
+	ListNode* partition(ListNode* pHead, int x) {
+		// write code here
+		struct ListNode* PHigh = (struct ListNode*)malloc(sizeof(struct ListNode));
+		struct ListNode* PLow = (struct ListNode*)malloc(sizeof(struct ListNode));
+		struct ListNode* TerminateH = PHigh;
+		struct ListNode* TerminateL = PLow;
+		struct ListNode* Current = pHead;
+		while (Current)
+		{
+			if (Current->val < x)
+			{
+				TerminateL->next = Current;
+				TerminateL = TerminateL->next;
+			}
+			else
+			{
+				TerminateH->next = Current;
+				TerminateH = TerminateH->next;
+			}
+			Current = Current->next;
+		}
+		TerminateH->next = NULL;
+		Current = PHigh->next;
+		free(PHigh);
+		PHigh = Current;
+		TerminateL->next = PHigh;
+		Current = PLow->next;
+		free(PLow);
+		PLow = Current;
+		return PLow;
+	}
 
 ////////////////////////////////////////////////////////////////
 
@@ -33,7 +63,7 @@ PListNode BuyNode(int x)
 
 int main()
 {
-	int nums[] = { 1,2,2,1 };
+	int nums[] = { 6,2,8 };
 	PListNode PHead = BuyNode(nums[0]);
 	PListNode PLast = PHead;
 	PListNode PCurrent = NULL;
@@ -47,6 +77,6 @@ int main()
 	}
 	PCurrent = NULL;
 	PLast = NULL;
-	PCurrent = FindKthToTail(PHead, 2);
+	PCurrent = partition(PHead, 9);
 	return 0;
 }
