@@ -783,3 +783,193 @@ void Test4()
 ![image-20240729174316195](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202407291743472.png)
 
 正常。
+
+#### 查找
+
+```c
+PSinglyListNode SinglyListFind(PSinglyListNode PHead, SinglyDataType val)
+{
+	PSinglyListNode PCurrent = PHead;
+	while (PCurrent)
+	{
+		if (PCurrent->data == val)
+		{
+			return PCurrent;
+		}
+		else
+		{
+			PCurrent = PCurrent->next;
+		}
+	}
+	return PCurrent;
+}
+```
+
+这里就不断言了，虽说在空链表里查找查找听起来怪怪的，但逻辑上是没问题，还是查不到吗，照样返回空指针。可以看到上面的打印也没断言，因为空链表也可以打印，只不过不打印数据而已，如果加了，输空链表它就崩了。
+
+#### 指定位置插入
+
+```c
+//指定位置插入
+//当PPHead合法时，在pos节点之前插入
+//当PPHead为空时，在pos节点之后插入
+void SinglyInsert(PSinglyListNode* PPHead, PSinglyListNode pos, SinglyDataType val)
+{
+	assert(pos);
+	PSinglyListNode PNewNode = SinglyListNodeGet(val);
+	if (PPHead == NULL)
+	{
+		//后插
+		PNewNode->next = pos->next;
+		pos->next = PNewNode;
+	}
+	else
+	{
+		//前插
+		assert(*PPHead);
+		PSinglyListNode prev = NULL;
+		PSinglyListNode current = *PPHead;
+		while (current != pos)
+		{
+			prev = current;
+			current = current->next;
+		}
+		if (prev == NULL)
+		{
+			PNewNode->next = current;
+			*PPHead = PNewNode;
+		}
+		else
+		{
+			PNewNode->next = current;
+			prev->next = PNewNode;
+		}
+	}
+}
+```
+
+前插要看看指定位置是不是就是头结点。
+
+#### 测试指定位置插入
+
+```c
+void Test5()
+{
+	PSinglyListNode PHead = NULL;
+	SinglyListPushBack(&PHead, 4);
+	SinglyListPushFront(&PHead, 1);
+	SinglyListPrintf(PHead);
+	PSinglyListNode pos = SinglyListFind(PHead, 1);
+	if (pos)
+	{
+		SinglyInsert(NULL, pos, 2);
+	}
+	else
+	{
+		printf("Find fail!\n");
+	}
+	pos = SinglyListFind(PHead, 4);
+	if (pos)
+	{
+		SinglyInsert(&PHead, pos, 3);
+	}
+	else
+	{
+		printf("Find fail!\n");
+	}
+	SinglyListPrintf(PHead);
+	SinglyListPopFront(&PHead);
+	SinglyListPopBack(&PHead);
+	SinglyListPopFront(&PHead);
+	SinglyListPrintf(PHead);
+	pos = SinglyListFind(PHead, 3);
+	if (pos)
+	{
+		SinglyInsert(&PHead, pos, 2);
+	}
+	else
+	{
+		printf("Find fail!\n");
+	}
+	SinglyListPrintf(PHead);
+	SinglyListDestroy(&PHead);
+}
+```
+
+![image-20240731114042028](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202407311140284.png)
+
+目前没有发生问题。就当通过了。
+
+#### 指定位置删除
+
+```c
+void SinglyErase(PSinglyListNode* PPHead, PSinglyListNode pos)
+{
+	assert(PPHead && *PPHead);
+	if (pos)
+	{
+		PSinglyListNode prev = NULL;
+		PSinglyListNode current = *PPHead;
+		while (current != pos)
+		{
+			prev = current;
+			current = current->next;
+		}
+		if (prev)
+		{
+			prev->next = current->next;
+			free(current);
+		}
+		else
+		{
+			*PPHead = current->next;
+			free(current);
+		}
+	}
+	else
+	{
+		printf("Invalid parameter!\n");
+		return;
+	}
+}
+```
+
+#### 测试指定位置删除
+
+```c
+void Test6()
+{
+	PSinglyListNode PHead = NULL;
+	SinglyListPushBack(&PHead, 4);
+	SinglyListPushFront(&PHead, 1);
+	SinglyListPrintf(PHead);
+	PSinglyListNode pos = SinglyListFind(PHead, 1);
+	if (pos)
+	{
+		SinglyErase(&PHead, pos);
+	}
+	else
+	{
+		printf("Find fail!\n");
+	}
+	SinglyListPrintf(PHead);
+	pos = SinglyListFind(PHead, 4);
+	if (pos)
+	{
+		SinglyErase(&PHead, pos);
+	}
+	else
+	{
+		printf("Find fail!\n");
+	}
+	SinglyListPrintf(PHead);
+	SinglyListDestroy(&PHead);
+}
+```
+
+![image-20240731123221759](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202407311232899.png)
+
+看起来没什么问题。
+
+# 完
+

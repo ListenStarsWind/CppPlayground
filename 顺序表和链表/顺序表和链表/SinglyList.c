@@ -94,3 +94,84 @@ void SinglyListPopBack(PSinglyListNode* PPHead)
 		*PPHead = NULL;
 	}
 }
+
+PSinglyListNode SinglyListFind(PSinglyListNode PHead, SinglyDataType val)
+{
+	PSinglyListNode PCurrent = PHead;
+	while (PCurrent)
+	{
+		if (PCurrent->data == val)
+		{
+			return PCurrent;
+		}
+		else
+		{
+			PCurrent = PCurrent->next;
+		}
+	}
+	return PCurrent;
+}
+
+void SinglyInsert(PSinglyListNode* PPHead, PSinglyListNode pos, SinglyDataType val)
+{
+	assert(pos);
+	PSinglyListNode PNewNode = SinglyListNodeGet(val);
+	if (PPHead == NULL)
+	{
+		//ºó²å
+		PNewNode->next = pos->next;
+		pos->next = PNewNode;
+	}
+	else
+	{
+		//Ç°²å
+		assert(*PPHead);
+		PSinglyListNode prev = NULL;
+		PSinglyListNode current = *PPHead;
+		while (current != pos)
+		{
+			prev = current;
+			current = current->next;
+		}
+		if (prev == NULL)
+		{
+			PNewNode->next = current;
+			*PPHead = PNewNode;
+		}
+		else
+		{
+			PNewNode->next = current;
+			prev->next = PNewNode;
+		}
+	}
+}
+
+void SinglyErase(PSinglyListNode* PPHead, PSinglyListNode pos)
+{
+	assert(PPHead && *PPHead);
+	if (pos)
+	{
+		PSinglyListNode prev = NULL;
+		PSinglyListNode current = *PPHead;
+		while (current != pos)
+		{
+			prev = current;
+			current = current->next;
+		}
+		if (prev)
+		{
+			prev->next = current->next;
+			free(current);
+		}
+		else
+		{
+			*PPHead = current->next;
+			free(current);
+		}
+	}
+	else
+	{
+		printf("Invalid parameter!\n");
+		return;
+	}
+}
