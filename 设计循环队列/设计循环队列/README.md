@@ -362,3 +362,35 @@ void myCircularQueueFree(MyCircularQueue* obj) {
 ![image-20240813154512465](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202408131545709.png)
 
 和链表相同，注意队尾队头读取函数，拷贝时不要拷贝上面的示例，而是要拷贝源代码。代码未经过全面测试，目前只能确定在力扣的题目中没有问题。
+
+### 题外话
+
+去看力扣的原题会发现它并不需要计算队列的有效长度，不过在上面的代码中，我们顺手定义了`_Size`去描述队列的有效长度，现在有一道题目，大致是这样的：
+
+现在有一个基于数组的循环队列，它的队头下标是`Front`，队尾下表是`Rear`，队列长度（数组的长度）是N，（这个队列中没有_Size，队头前一位也是空的），问，该如何计算它的有效长度。
+
+一个简单有效的方法是用分支
+
+当`Rear`大于`Front`时，比如下面这种情况。
+
+![绘图1](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202408141051212.png)
+
+元素间的分割线不是很明显，将就看吧。
+
+那很明显就是`Rear`-`Front`
+
+关键是当`Rear`小于`Front`怎么办
+
+![绘图1](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202408141057683.png)
+
+分割线间有空隙，将就看。
+
+那就是`Rear`+`N`-`Front`，相当于这样：
+
+![绘图1](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202408141108871.png)
+
+有没有一劳永逸的解决方法呢？当然是有的。
+
+其实上面的两种分支都可以转化成同一种模运算。
+
+`(Rear + N - Front) % N`，这道题真正想要的答案就是这个式子。

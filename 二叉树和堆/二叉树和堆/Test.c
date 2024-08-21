@@ -1,0 +1,95 @@
+#include"Heap.h"
+
+void test1()
+{
+	pHeap pH = HeapInit();
+	int arr[] = { 65,100,70,32,50,60 };
+	int sz = sizeof(arr)/sizeof(arr[0]);
+	int current = 0;
+	for(current = 0; current < sz; current++)
+	{
+		int i = arr[current];
+		HeapPush(pH, i);
+	}
+	HeapDestroy(pH);
+	pH = NULL;
+}
+
+void test2()
+{
+	pHeap pH = HeapInit();
+	int arr[] = { 65,100,70,32,50,60 };
+	int sz = sizeof(arr) / sizeof(arr[0]);
+	int current = 0;
+	for (current = 0; current < sz; current++)
+	{
+		int i = arr[current];
+		HeapPush(pH, i);
+	}
+	HeapPop(pH);
+	HeapDestroy(pH);
+	pH = NULL;
+}
+
+void test3()
+{
+	pHeap pH = HeapInit();
+	int arr[] = { 65,100,70,32,50,60 };
+	int sz = sizeof(arr) / sizeof(arr[0]);
+	int current = 0;
+	for (current = 0; current < sz; current++)
+	{
+		int i = arr[current];
+		HeapPush(pH, i);
+	}
+	while (!HeapEmpty(pH))
+	{
+		HeapData top = HeapTop(pH);
+		printf("%d\n",top);
+		HeapPop(pH);
+	}
+	HeapDestroy(pH);
+	pH = NULL;
+}
+
+void test4()
+{
+	HeapData arr[] = { 65,100,70,32,50,60 };
+	int sz = sizeof(arr) / sizeof(arr[0]);
+	HeapSort1(arr, sz);
+	int cir = 0;
+	for (; cir < sz; cir++)
+	{
+		printf("arr[%d]=%d\n", cir, arr[cir]);
+	}
+}
+
+void test5()
+{
+	HeapData arr[] = { 65,100,70,32,50,60 };
+	int sz = sizeof(arr) / sizeof(arr[0]);
+	HeapSort2(arr, sz);
+	int cir = 0;
+	for (; cir < sz; cir++)
+	{
+		printf("arr[%d]=%d\n", cir, arr[cir]);
+	}
+}
+
+void test6()
+{
+	HeapData arr[] = { 65,100,70,32,50,60,85 };
+	int sz = sizeof(arr) / sizeof(arr[0]);
+	HeapSort(arr, sz);
+	int cir = 0;
+	for (; cir < sz; cir++)
+	{
+		printf("arr[%d]=%d\n", cir, arr[cir]);
+	}
+}
+
+int main()
+{
+	test6();
+	return 0;
+}
