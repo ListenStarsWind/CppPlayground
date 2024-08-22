@@ -1,4 +1,5 @@
 #include"Heap.h"
+#include"time.h"
 
 void test1()
 {
@@ -88,8 +89,56 @@ void test6()
 	}
 }
 
+void CreateData(int k)
+{
+	FILE* pf = fopen("data.txt", "w");
+	if (pf == NULL)
+	{
+		perror("CreateData open fail");
+		return;
+	}
+	srand((unsigned int)time(NULL));
+	while (k--)
+	{
+		int n = rand() % 10000;
+		fprintf(pf, "%d\n", n);
+	}
+	fclose(pf);
+	pf = NULL;
+}
+
+void test7()
+{
+	//CreateData(100000);
+	int* pArray = TopK1(5);
+	if (pArray != NULL)
+	{
+		int i = 0;
+		for (; i < 5; i++)
+		{
+			printf("%d\n", pArray[i]);
+		}
+		free(pArray);
+	}
+}
+
+void test8()
+{
+	//CreateData(100000);
+	int* pArray = TopK(5);
+	if (pArray != NULL)
+	{
+		int i = 0;
+		for (; i < 5; i++)
+		{
+			printf("%d\n", pArray[i]);
+		}
+		free(pArray);
+	}
+}
+
 int main()
 {
-	test6();
+	test8();
 	return 0;
 }

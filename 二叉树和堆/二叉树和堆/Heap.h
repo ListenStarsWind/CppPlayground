@@ -41,3 +41,16 @@ void HeapSort1(pHeapData pArray, int Size);
 void HeapSort2(pHeapData pArray, int Size);
 
 void HeapSort(pHeapData pArray, int Size);
+
+// To find the top k largest numbers, set the "rule" to min-heap mode; otherwise, set it to max-heap mode.
+// When using this algorithm, please set the filename to "data.txt".
+// If the output array is no longer needed, please free it.
+// On failure, return a null pointer NULL; on success, there are two cases: in the vast majority of cases,
+// return a sorted array, and in rare cases, return an unsorted array.
+pHeapData TopK1(int k);
+
+// To find the top k largest numbers, set the "rule" to min-heap mode; otherwise, set it to max-heap mode.
+// When using this algorithm, please set the filename to "data.txt".
+// If the output array is no longer needed, please free it.
+// On success, return a sorted array; otherwise, return a null pointer.
+pHeapData TopK(int k);

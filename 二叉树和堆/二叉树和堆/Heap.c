@@ -288,3 +288,90 @@ void HeapSort(pHeapData pArray, int Size)
 		adjustDOWN(pArray, circulation, 0);
 	}
 }
+
+pHeapData TopK1(int k)
+{
+	FILE* pf = fopen("data.txt", "r");
+	if (pf == NULL)
+	{
+		perror("TopK open fail");
+		return NULL;
+	}
+	pHeap pH = HeapInit();
+	HeapData val = (HeapData)0;
+	while (k--)
+	{
+		fscanf(pf, "%d", &val);
+		HeapPush(pH, val);
+	}
+	while (!feof(pf))
+	{
+		fscanf(pf, "%d", &val);
+		if (rule(val, HeapTop(pH)))
+		{
+			pH->_pArray[0] = val;
+			adjustDOWN(pH->_pArray, pH->_Size, 0);
+		}
+	}
+	fclose(pf);
+	pf = NULL;
+
+	pHeapData ret = NULL;
+	ret = (pHeapData)realloc(pH->_pArray, sizeof(HeapData) * pH->_Size);
+	if (ret == NULL)
+	{
+		ret = pH->_pArray;
+		free(pH);
+	}
+	else
+	{
+		HeapSort(ret, pH->_Size);
+		free(pH);
+	}
+	return ret;
+}
+
+pHeapData TopK(int k)
+{
+	FILE* pf = fopen("data.txt", "r");
+	if (pf == NULL)
+	{
+		perror("TopK open fail");
+		return NULL;
+	}
+	pHeapData pArray = (pHeapData)malloc(sizeof(HeapData) * k);
+	if (pArray == NULL)
+	{
+		perror("TopK malloc fail");
+		return NULL;
+	}
+	int circulation = 0;
+	for (; circulation < k; circulation++)
+	{
+		fscanf(pf, "%d", &(pArray[circulation]));
+	}
+	for (circulation = FindParent(k - 1, k); circulation >= 0; circulation--)
+	{
+		adjustDOWN(pArray, k, circulation);
+	}
+	HeapData val = 0;
+	while (!feof(pf))
+	{
+		fscanf(pf, "%d", &val);
+		if (rule(val, pArray[0]))
+		{
+			pArray[0] = val;
+			adjustDOWN(pArray, k, 0);
+		}
+	}
+	fclose(pf);
+	pf = NULL;
+
+	for (circulation = k - 1; circulation > 0; circulation--)
+	{
+		Swap(&(pArray[0]), &(pArray[circulation]));
+		adjustDOWN(pArray, circulation, 0);
+	}
+
+	return pArray;
+}

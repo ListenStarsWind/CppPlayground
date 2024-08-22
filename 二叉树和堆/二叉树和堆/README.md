@@ -1182,3 +1182,175 @@ $$
 
 --------
 
+### TopK
+
+试想一下，当要处理的数据过多时，比如10亿个整型，要找出前5个最大的数，该怎么办？
+$$
+1G = 1024MB
+$$
+
+$$
+1024MB = 1024*1024KB
+$$
+
+$$
+1024*1024KB = 1024*1024*1024Byte(约为10亿字节)
+$$
+
+也就是说，10亿个整型全放内存里大概4个G，这内存占用实在是太多了，有没有什么解决方法呢？
+
+TopK算法正是为此诞生的，其中的K指的就是要找出的数据个数。
+
+它的思路是：先把这些数据以文件的形式存入磁盘中，然后先从中读取前K个数据建立堆，由于堆的性质，此时堆的根节点就是这K个数的极值，如果建的是小堆，那根节点就是这K个数中的最小值，如果建的是大堆，那根节点就是这K个数的最大值。然后再把剩下的N-K个数与根节点逐个对比，如果它处于由根节点界定的范围内，它就替换原根节点，替换完后进行向下调整，找出这K个数里的新极值，再进行比对，直到文件全部读完。此时堆里的数就是要找的数。
+
+```c
+// To find the top k largest numbers, set the "rule" to min-heap mode; otherwise, set it to max-heap mode.
+// When using this algorithm, please set the filename to "data.txt".
+// If the output array is no longer needed, please free it.
+// On failure, return a null pointer NULL; on success, there are two cases: in the vast majority of cases,
+// return a sorted array, and in rare cases, return an unsorted array.
+pHeapData TopK1(int k)
+{
+	FILE* pf = fopen("data.txt", "r");
+	if (pf == NULL)
+	{
+		perror("TopK open fail");
+		return NULL;
+	}
+	pHeap pH = HeapInit();
+	HeapData val = (HeapData)0;
+	while (k--)
+	{
+		fscanf(pf, "%d", &val);
+		HeapPush(pH, val);
+	}
+	while (!feof(pf))
+	{
+		fscanf(pf, "%d", &val);
+		if (rule(val, HeapTop(pH)))
+		{
+			pH->_pArray[0] = val;
+			adjustDOWN(pH->_pArray, pH->_Size, 0);
+		}
+	}
+	fclose(pf);
+	pf = NULL;
+
+	pHeapData ret = NULL;
+	ret = (pHeapData)realloc(pH->_pArray, sizeof(HeapData) * pH->_Size);
+	if (ret == NULL)
+	{
+		ret = pH->_pArray;
+		free(pH);
+	}
+	else
+	{
+		HeapSort(ret, pH->_Size);
+		free(pH);
+	}
+	return ret;
+}
+
+// To find the top k largest numbers, set the "rule" to min-heap mode; otherwise, set it to max-heap mode.
+// When using this algorithm, please set the filename to "data.txt".
+// If the output array is no longer needed, please free it.
+// On success, return a sorted array; otherwise, return a null pointer.
+pHeapData TopK(int k)
+{
+	FILE* pf = fopen("data.txt", "r");
+	if (pf == NULL)
+	{
+		perror("TopK open fail");
+		return NULL;
+	}
+	pHeapData pArray = (pHeapData)malloc(sizeof(HeapData) * k);
+	if (pArray == NULL)
+	{
+		perror("TopK malloc fail");
+		return NULL;
+	}
+	int circulation = 0;
+	for (; circulation < k; circulation++)
+	{
+		fscanf(pf, "%d", &(pArray[circulation]));
+	}
+	for (circulation = FindParent(k - 1, k); circulation >= 0; circulation--)
+	{
+		adjustDOWN(pArray, k, circulation);
+	}
+	HeapData val = 0;
+	while (!feof(pf))
+	{
+		fscanf(pf, "%d", &val);
+		if (rule(val, pArray[0]))
+		{
+			pArray[0] = val;
+			adjustDOWN(pArray, k, 0);
+		}
+	}
+	fclose(pf);
+	pf = NULL;
+
+	for (circulation = k - 1; circulation > 0; circulation--)
+	{
+		Swap(&(pArray[0]), &(pArray[circulation]));
+		adjustDOWN(pArray, circulation, 0);
+	}
+
+	return pArray;
+}
+```
+
+TopK1不用看，那是废案。TopK1与TopK的区别在于建堆方式的不同。TopK1采用`HeapPush`的方式建堆，而TopK采用`adjustDOWN`的方式建堆，建堆方式的不同导致TopK1在后续对不需要内存块的释放操作臃肿且复杂，并且可能返回乱序数组，这是它成为废案的原因。
+
+这里主要注意的是文件操作，但考虑到之前已经写过，就不再赘述了。
+
+### 测试
+
+如何进行测试呢？为此要先生成一个储存数据的文件，里面的数据就用`rand`生成。
+
+```c
+void CreateData(int k)
+{
+	FILE* pf = fopen("data.txt", "w");
+	if (pf == NULL)
+	{
+		perror("CreateData open fail");
+		return;
+	}
+	srand((unsigned int)time(NULL));
+	while (k--)
+	{
+		int n = rand() % 10000;
+		fprintf(pf, "%d\n", n);
+	}
+	fclose(pf);
+	pf = NULL;
+}
+```
+
+这样就得到了一个储存k个小于10000的数，为了方便验证算法的正确性，在生成后，随便找几个数，让它们的值超过10000。（注意不要超过整型的范围）
+
+```c
+void test8()
+{
+	//CreateData(100000);
+	int* pArray = TopK(5);
+	if (pArray != NULL)
+	{
+		int i = 0;
+		for (; i < 5; i++)
+		{
+			printf("%d\n", pArray[i]);
+		}
+		free(pArray);
+	}
+}
+```
+
+<video src="https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202408221200993.mp4"></video>
+
+![image-20240822120126884](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202408221201065.png)
+
+# 完
+
