@@ -7,18 +7,18 @@ int main()
 	switch (a)
 	{
 	default:
-		printf("输入错误");
+		printf("杈撳叆閿欒");
 		break;
 	case 1:
 	case 2:
 	case 3:
 	case 4:
 	case 5:
-		printf("是工作日");
+		printf("鏄伐浣滄棩");
 		break;
 	case 6:
 	case 7:
-		printf("是休息日");
+		printf("鏄紤鎭棩");
 		break;
 
 	}

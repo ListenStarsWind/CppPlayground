@@ -3,18 +3,18 @@
 int main()
 {
 	int a = 0;
-	printf("ÇëÊäÈëÊı¾İ");
+	printf("è¯·è¾“å…¥æ•°æ®");
 	scanf("%d", &a);
 	switch (a % 3)
 	{
 	case 0:
-		printf("Õâ¸öÊı¿ÉÒÔ±»ÈıÕû³ı\n");
+		printf("è¿™ä¸ªæ•°å¯ä»¥è¢«ä¸‰æ•´é™¤\n");
 
 	case 1:
-		printf("ÓàÊıÊÇÒ»\n");
+		printf("ä½™æ•°æ˜¯ä¸€\n");
 
 	case 2:
-		printf("ÓàÊıÊÇ¶ş\n");
+		printf("ä½™æ•°æ˜¯äºŒ\n");
 
 	}
 	return 0;
