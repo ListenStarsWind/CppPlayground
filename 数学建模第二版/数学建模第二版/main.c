@@ -1,3 +1,54 @@
+
+#define choose 1
+
+#if choose
+
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_randist.h>
+#include <stdio.h>
+#include <math.h>
+
+#define KILL_RADIUS 20
+#define STATISTICS_Z 40
+#define SUBMARINE_LENGTH 120
+#define SUBMARINE_DEPTH 150
+
+double normal_cdf(double x) {
+    double sum = 0.0;
+    double step = 0.001; // 积分步长
+    for (double i = -10; i <= x; i += step) {
+        sum += gsl_ran_ugaussian_pdf(i) * step; // 使用矩形法进行数值积分
+    }
+    return sum;
+}
+
+double hit_probability_with_error() {
+    gsl_integration_workspace* workspace = gsl_integration_workspace_alloc(1000);
+    double result, error;
+
+    gsl_function F;
+    F.function = &gsl_ran_ugaussian_pdf;
+    F.params = NULL;
+
+    double a = SUBMARINE_DEPTH - KILL_RADIUS; // 积分下限
+    double b = SUBMARINE_DEPTH + KILL_RADIUS; // 积分上限
+
+    // 进行积分
+    gsl_integration_qag(&F, a, b, 0, 1e-7, 1000, GSL_INTEG_GAUSS61, workspace, &result, &error);
+
+    gsl_integration_workspace_free(workspace);
+    return result;
+}
+
+int main() {
+    double probability = hit_probability_with_error();
+    printf("Hit Probability with Error: %f\n", probability);
+    return 0;
+}
+
+#endif
+
+#if !choose
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -71,3 +122,5 @@ int main() {
 
     return 0;
 }
+
+#endif

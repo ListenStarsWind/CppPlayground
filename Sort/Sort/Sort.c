@@ -1,4 +1,5 @@
 #include"Sort.h"
+#include"Stack.h"
 
 bool compare(SortData val1, SortData val2)
 {
@@ -186,6 +187,8 @@ void Heap_sort(pSortData pArray, int Size)
 
 static int Hoare_mode(pSortData pArray, int left, int right)
 {
+	int mid = middle_of_three(pArray, left, right);
+	Swap(&(pArray[mid]), &(pArray[left]));
 	int key = left;
 	while (left < right)
 	{
@@ -205,6 +208,8 @@ static int Hoare_mode(pSortData pArray, int left, int right)
 
 static int FillGap_mode(pSortData pArray, int left, int right)
 {
+	int mid = middle_of_three(pArray, left, right);
+	Swap(&(pArray[mid]), &(pArray[left]));
 	SortData key = pArray[left];
 	int gap = left;
 	while (left < right)
@@ -228,6 +233,8 @@ static int FillGap_mode(pSortData pArray, int left, int right)
 
 static int Search_mode(pSortData pArray, int left, int right)
 {
+	int mid = middle_of_three(pArray, left, right);
+	Swap(&(pArray[mid]), &(pArray[left]));
 	int key = left;
 	int prev = left;
 	int curr = left;
@@ -247,7 +254,7 @@ static void _Quick_sort_root(pSortData pArray, int left, int right)
 {
 	if (left >= right)
 		return;
-	int key = Search_mode(pArray, left, right);
+	int key = Hoare_mode(pArray, left, right);
 	_Quick_sort_root(pArray, left, key - 1);
 	_Quick_sort_root(pArray, key + 1, right);
 }
@@ -255,4 +262,234 @@ static void _Quick_sort_root(pSortData pArray, int left, int right)
 void Quick_sort(pSortData pArray, int Size)
 {
 	_Quick_sort_root(pArray, 0, Size - 1);
+}
+
+int middle_of_three(pSortData pArray, int left, int right)
+{
+	int mid = (left + right) / 2;
+	if (compare(pArray[left], pArray[mid]))
+	{
+		if (compare(pArray[mid], pArray[right]))
+		{
+			return mid;
+		}
+		else
+		{
+			if (compare(pArray[left], pArray[right]))
+			{
+				return right;
+			}
+			else
+				return left;
+		}
+	}
+	else
+	{
+		if (compare(pArray[right], pArray[mid]))
+		{
+			return mid;
+		}
+		else
+		{
+			if (compare(pArray[left], pArray[right]))
+			{
+				return left;
+			}
+			else
+				return right;
+		}
+	}
+}
+
+void Quick_sort_NonR(pSortData pArray, int Size)
+{
+	PST pStack = STInit();
+	STPush(pStack, Size - 1);
+	STPush(pStack, 0);
+	while (!STEmpty(pStack))
+	{
+		int left = STPop(pStack);
+		int right = STPop(pStack);
+		int key = Hoare_mode(pArray, left, right);
+		if (key + 1 < right)
+		{
+			STPush(pStack, right);
+			STPush(pStack, key + 1);
+		}
+		if (left < key - 1)
+		{
+			STPush(pStack, key - 1);
+			STPush(pStack, left);
+		}
+	}
+	STDestroy(pStack);
+}
+
+void _Merge_sort_root(pSortData pArray, int left, int right, pSortData p_Temporary_Storage)
+{
+	if (left >= right)
+		return;
+	int mid = (left + right) / 2;
+	_Merge_sort_root(pArray, left, mid, p_Temporary_Storage);
+	_Merge_sort_root(pArray, mid + 1, right, p_Temporary_Storage);
+	int begin1 = left, end1 = mid;
+	int begin2 = mid + 1, end2 = right;
+	int begin = left;
+	while (begin1 <= end1 && begin2 <= end2)
+	{
+		if (compare(pArray[begin1], pArray[begin2]))
+		{
+			p_Temporary_Storage[begin++] = pArray[begin2++];
+		}
+		else
+		{
+			p_Temporary_Storage[begin++] = pArray[begin1++];
+		}
+	}
+	while (begin1 <= end1)
+	{
+		p_Temporary_Storage[begin++] = pArray[begin1++];
+	}
+	while (begin2 <= end2)
+	{
+		p_Temporary_Storage[begin++] = pArray[begin2++];
+	}
+	memcpy(pArray + left, p_Temporary_Storage + left, sizeof(SortData) * (right - left + 1));
+}
+
+void Merge_sort(pSortData pArray, int Size)
+{
+	pSortData pTS = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pTS == NULL)
+	{
+		perror("Merge_sort pTS fail");
+		return; 
+	}
+	_Merge_sort_root(pArray, 0, Size - 1, pTS);
+	free(pTS);
+}
+
+void Merge_sort_NonR(pSortData pArray, int Size)
+{
+	pSortData pTS = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pTS == NULL)
+	{
+		perror("Merge_sort pTS fail");
+		return;
+	}
+	int gap;
+	for (gap = 1; gap < Size; gap *= 2)
+	{
+		// The variable ¡°begin¡± changes itself when it is written to the staging array, 
+		// eliminating the need to manually control the iteration.
+		int begin = 0;
+		while (begin < Size)
+		{
+			// The variable ¡°start¡± is used to control the starting position of the data copy.
+			int start = begin;
+			int begin1 = begin, end1 = begin1 + gap - 1;
+			int begin2 = end1 + 1, end2 = begin2 + gap - 1;
+
+			// The three conditional statements along with 
+			// the outer loop condition prevent the variable from going out of bounds.
+			if (end1 >= Size)
+			{
+				end1 = Size - 1;
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (begin2 >= Size)
+			{
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (end2 >= Size)
+			{
+				end2 = Size - 1;
+			}
+
+
+			while (begin1 <= end1 && begin2 <= end2)
+			{
+				if (compare(pArray[begin1], pArray[begin2]))
+				{
+					pTS[begin++] = pArray[begin2++];
+				}
+				else
+				{
+					pTS[begin++] = pArray[begin1++];
+				}
+			}
+			while (begin1 <= end1)
+			{
+				pTS[begin++] = pArray[begin1++];
+			}
+			while (begin2 <= end2)
+			{
+				pTS[begin++] = pArray[begin2++];
+			}
+			memcpy(pArray + start, pTS + start, sizeof(SortData) * (end2 - start + 1));
+		}
+	}
+	free(pTS);
+}
+
+void Merge_sort_NonR1(pSortData pArray, int Size)
+{
+	pSortData pTS = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pTS == NULL)
+	{
+		perror("Merge_sort pTS fail");
+		return;
+	}
+	int gap;
+	for (gap = 1; gap < Size; gap *= 2)
+	{
+		int begin = 0;
+		while (begin < Size)
+		{
+			int begin1 = begin, end1 = begin1 + gap - 1;
+			int begin2 = end1 + 1, end2 = begin2 + gap - 1;
+
+			
+			if (end1 >= Size)
+			{
+				end1 = Size - 1;
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (begin2 >= Size)
+			{
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (end2 >= Size)
+			{
+				end2 = Size - 1;
+			}
+
+
+			while (begin1 <= end1 && begin2 <= end2)
+			{
+				if (compare(pArray[begin1], pArray[begin2]))
+				{
+					pTS[begin++] = pArray[begin2++];
+				}
+				else
+				{
+					pTS[begin++] = pArray[begin1++];
+				}
+			}
+			while (begin1 <= end1)
+			{
+				pTS[begin++] = pArray[begin1++];
+			}
+			while (begin2 <= end2)
+			{
+				pTS[begin++] = pArray[begin2++];
+			}
+		}
+		memcpy(pArray, pTS, sizeof(SortData) * Size);
+	}
+	free(pTS);
 }

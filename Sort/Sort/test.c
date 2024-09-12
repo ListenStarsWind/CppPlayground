@@ -19,6 +19,7 @@ pSortData BulidArray(int Size)
 	return pArray;
 }
 
+
 void pArrayPrintf(pSortData pArray, int Size)
 {
 	int circuit = 0;
@@ -78,10 +79,10 @@ pSortData pArray_copy(pSortData pSource, int Size)
 		printf("The " #Proceedings " runtime is %dms.\n", end-begin);\
     }														
 
-PerformanceTesting(100000, Quick_sort)
+PerformanceTesting(10, Merge_sort_NonR1)
 
 int main()
 {	
-	test_Quick_sort();
+	test_Merge_sort_NonR1();
 	return 0;
 }

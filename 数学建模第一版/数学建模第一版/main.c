@@ -1,3 +1,8 @@
+
+#define choose 1
+
+#if !choose
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -82,3 +87,37 @@ int main() {
     printf("概率最大的坐标: (%.2f, %.2f)\n", best_x, best_y);
     return 0;
 }
+
+
+#endif
+
+#if choose
+
+#include <stdio.h>
+#include <math.h>
+
+#define KILL_RADIUS 20
+#define SUBMARINE_LENGTH 120
+#define SUBMARINE_DEPTH 150
+
+double hit_probability_no_error() {
+    double kill_radius = KILL_RADIUS;
+    double submarine_length = SUBMARINE_LENGTH;
+    double submarine_depth = SUBMARINE_DEPTH;
+
+    // 假设潜艇的长度和深度均在杀伤半径内
+    if (submarine_length <= kill_radius && submarine_depth <= kill_radius) {
+        return 1.0;
+    }
+    else {
+        return 0.0;
+    }
+}
+
+int main() {
+    double probability = hit_probability_no_error();
+    printf("Hit Probability with No Error: %f\n", probability);
+    return 0;
+}
+
+#endif

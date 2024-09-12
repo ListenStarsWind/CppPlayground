@@ -1,4 +1,4 @@
-# 排序
+#  排序
 
 ## 排序的相关概念
 
@@ -870,7 +870,413 @@ static int Search_mode(pSortData pArray, int left, int right)
 
 前面说过，基准值实际是可以任意选择的，所以为了避免出现最坏情况，就可以对快速排序进一步优化：
 
-我们先挑出三个预选值，分别是数组末尾，开头，中间，然后选择中间的那一个，当然，这样代码就进一步复杂了，在此我就不写详细代码了。
+我们先挑出三个预选值，分别是数组末尾，开头，中间，然后选择中间的那一个。但如果直接在单轮排序上修改就太麻烦了，所以我们的实际操作是先把三个数中间的那个数找出来，然后让它与数组首元素进行数值交换。
+
+```c
+int middle_of_three(pSortData pArray, int left, int right)
+{
+	int mid = (left + right) / 2;
+	if (compare(pArray[left], pArray[mid]))
+	{
+		if (compare(pArray[mid], pArray[right]))
+		{
+			return mid;
+		}
+		else
+		{
+			if (compare(pArray[left], pArray[right]))
+			{
+				return right;
+			}
+			else
+				return left;
+		}
+	}
+	else
+	{
+		if (compare(pArray[right], pArray[mid]))
+		{
+			return mid;
+		}
+		else
+		{
+			if (compare(pArray[left], pArray[right]))
+			{
+				return left;
+			}
+			else
+				return right;
+		}
+	}
+}
+```
+
+为了观察三数选中的效果，我们先修改一下数组构建函数
+
+```c
+pSortData BulidArray(int Size)
+{
+	pSortData pArray = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pArray == NULL)
+	{
+		perror("BulidArray malloc fail");
+		return NULL;
+	}
+	int circuit = 0;
+	for (; circuit < Size; circuit++)
+	{
+		pArray[circuit] = circuit;
+	}
+	return pArray;
+}
+```
+
+现在单次排序没有三数选中，让我们看看效率：
+
+```c
+PerformanceTesting(100000, Quick_sort)
+
+int main()
+{	
+	test_Quick_sort();
+	return 0;
+}
+```
+
+![image-20240908200824256](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409082008593.png)
+
+看样子是函数栈帧层数过多，栈溢出了。
+
+换一下，
+
+```c
+PerformanceTesting(3000, Quick_sort)
+
+int main()
+{	
+	test_Quick_sort();
+	return 0;
+}
+```
+
+![image-20240908203743047](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409082037232.png)
+
+现在加上三数选中，再来一次。
+
+![image-20240908203850427](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409082038544.png)
+
+差别不是很明显，这应该是我电脑性能不行，参数设大一些就栈溢出了，理论上来说，参数越大，差别就应该越明显。等会以非递归实现快排之后，再试一试。
+
+------
+
+刚刚我们就看到了递归的缺点，当递归过深后，就容易出现栈溢出，所以接下来我们要以非递归的方式实现快速排序。
+
+先让我们想一想当初为什么偏要用递归的方式去实现快排。其实很简单，就是利用递归把函数栈帧以树状的形式组织起来，然后用单轮排序返回的下标值把它们联系起来。
+
+还是回到霍尔法，以动图中的数组[  6,1,2,7,9,3,4,7,10,8 ]为例。图中，蓝色文本数字表示数组下标，蓝红色序列号表示先后顺序。
+
+![1e7d0fb3335ddd78a1de96e9b07f68d3](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409091954265.png)
+
+从这张图中，我们可以看到，下标数据遵循着“先进后出”的性质，哪种数据结构有“先进后出”的性质呢？那就是栈。注意这里说的“栈”是数据结构的栈，而不是内存的那个栈。我们自己开辟的栈是建立在内存的堆上的，堆的大小远大于栈（内存），所以就不会像递归那么容易出现栈溢出。
+
+```c
+void Quick_sort_NonR(pSortData pArray, int Size)
+{
+	PST pStack = STInit();
+	STPush(pStack, Size - 1);
+	STPush(pStack, 0);
+	while (!STEmpty(pStack))
+	{
+		int left = STPop(pStack);
+		int right = STPop(pStack);
+		int key = Hoare_mode(pArray, left, right);
+		if (key + 1 < right)
+		{
+			STPush(pStack, right);
+			STPush(pStack, key + 1);
+		}
+		if (left < key - 1)
+		{
+			STPush(pStack, key - 1);
+			STPush(pStack, left);
+		}
+	}
+	STDestroy(pStack);
+}
+```
+
+注：栈的相关文件请参考《栈和队列》。
+
+```c
+PerformanceTesting(100000, Quick_sort_NonR)
+
+int main()
+{	
+	test_Quick_sort_NonR();
+	return 0;
+}
+```
+
+![image-20240909205856952](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409092058124.png)
+
+看，即使是这样大的数据个数也不会栈溢出。
+
+好的，上面的是带有三数选中的，让我们先把数组构造函数换成最坏情况的那种，然后再对比一下三数选中有无的效果。
+
+```c
+PerformanceTesting(10000000, Quick_sort_NonR)
+
+int main()
+{	
+	test_Quick_sort_NonR();
+	return 0;
+}
+```
+
+含有三数选中时的结果：
+
+![image-20240909213236764](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409092132023.png)
+
+现在我们把三数选中去掉，为了节约时间，就不打印了。
+
+好的，最起码运行了15分钟，然后我受不了了，关掉了。
+
+除了栈之外，队列也可以实现快速排序的非递归版本，只不过此时它的遍历次序已经和递归完全不同了。此时它应该先把0,9压入队列，再弹出0,9；随后压入0,4和6,9；然后弹出0,4；压入0,1和3,4；然后弹出6,9，压入6,7和9······也就是说，它是层序遍历树的。这里就不详细说了。
+
+### 归并排序
+
+归并排序使用的仍是分治的思想，它先将整个数组分成若干个子数组，然后再将这些子数组作进一步的拆分，直到拆分出的子数组一定是有序的。什么叫“一定有序”，很简单，拆的只剩一个成员它不就自然有序了。比如，对于一个有10个成员的数组来说，它先把这10个数组拆分成2个大小为5的子数组，下标分别是0到4, 5到9；然后再进一步拆分，拆成4个数组，下标分别是0到2, 3到4，5到7, 8到9,；随后再拆分，变成下标为0到1， 1到2， 3, 4， 5到6,  6到7, 8, 9········
+
+拆成1个成员怎么办呢？比如现在已经有两个已经“被迫”（就一个成员吗）有序的数组了，第一个数组，有一个成员，是4；第二个数组，是1,；归并归并，就是归档，合并；于是我们先把这两个数组的首元素比较一下，我们发现，1是更小的，于是就把1拷贝到一个暂时的空间，然后第二个数组遍历完了，于是就把第一个数组剩下的部分，也就是那个6，拷贝到暂存空间中，然后再拷贝回去，这样，原数组的这两个子数组合并完了，于是，此时原数组的那个地方就变成了1,6；好的，现在已经有两个数组，这两个数组都有两个成员，第一个数组是1,6；第二个数组是3,8；然后呢，我们把这两个数组的首元素比较一下，我们发现，1更小是吧，就把1拷贝到暂存空间中，然后对比一下，第一个数组的第二成员和第二个数组的第一个成员，我们发现3更小，是吧，那就把3拷贝到暂存空间，然后再比较一下第一个数组和第二个成员的第二成员，我们发现6更小，于是拷贝到暂存空间，然后第一个数组没成员了，于是就把第二个数组的剩下部分再拷贝到暂存空间，此时暂存空间的这个地方就是1,3,6,8了，再把这地方拷贝会原数组的地方就行了。
+
+![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409111041977.gif)
+
+因为某些不可抗拒因素，可能有些帧没有被成功录入。
+
+```c
+void _Merge_sort_root(pSortData pArray, int left, int right, pSortData p_Temporary_Storage)
+{
+	if (left >= right)
+		return;
+	int mid = (left + right) / 2;
+	_Merge_sort_root(pArray, left, mid, p_Temporary_Storage);
+	_Merge_sort_root(pArray, mid + 1, right, p_Temporary_Storage);
+	int begin1 = left, end1 = mid;
+	int begin2 = mid + 1, end2 = right;
+	int begin = left;
+	while (begin1 <= end1 && begin2 <= end2)
+	{
+		if (compare(pArray[begin1], pArray[begin2]))
+		{
+			p_Temporary_Storage[begin++] = pArray[begin2++];
+		}
+		else
+		{
+			p_Temporary_Storage[begin++] = pArray[begin1++];
+		}
+	}
+	while (begin1 <= end1)
+	{
+		p_Temporary_Storage[begin++] = pArray[begin1++];
+	}
+	while (begin2 <= end2)
+	{
+		p_Temporary_Storage[begin++] = pArray[begin2++];
+	}
+	memcpy(pArray + left, p_Temporary_Storage + left, sizeof(SortData) * (right - left + 1));
+}
+
+void Merge_sort(pSortData pArray, int Size)
+{
+	pSortData pTS = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pTS == NULL)
+	{
+		perror("Merge_sort pTS fail");
+		return; 
+	}
+	_Merge_sort_root(pArray, 0, Size - 1, pTS);
+	free(pTS);
+}
+```
+
+ ```c
+ PerformanceTesting(10, Merge_sort)
+ 
+ int main()
+ {	
+ 	test_Merge_sort();
+ 	return 0;
+ }
+ ```
+
+![image-20240911104406653](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409111044774.png)
+
+-------
+
+接下来我们说一说归并排序的非递归。
+
+上面我们说过，当数组只有一个成员时，它就自然而言地有序了，所以我们就先把数组中的相邻成员直接两两分组，每组排一下，然后每小组（两个成员）就有序了，然后，再把相邻的两个小组进行合并，以此类推，当然，可以预见到，这种方法肯定会有很多越界错误，所以我们要做的，就是把这些错误找出来，针对这些错误，对代码进行不断优化。
+
+```c
+void Merge_sort_NonR(pSortData pArray, int Size)
+{
+	pSortData pTS = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pTS == NULL)
+	{
+		perror("Merge_sort pTS fail");
+		return;
+	}
+	int gap;
+	for (gap = 1; gap < Size; gap *= 2)
+	{
+		// The variable “begin” changes itself when it is written to the staging array, 
+		// eliminating the need to manually control the iteration.
+		int begin = 0;
+		while (begin < Size)
+		{
+			// The variable “start” is used to control the starting position of the data copy.
+			int start = begin;
+			int begin1 = begin, end1 = begin1 + gap - 1;
+			int begin2 = end1 + 1, end2 = begin2 + gap - 1;
+
+			// The three conditional statements along with 
+			// the outer loop condition prevent the variable from going out of bounds.
+			if (end1 >= Size)
+			{
+				end1 = Size - 1;
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (begin2 >= Size)
+			{
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (end2 >= Size)
+			{
+				end2 = Size - 1;
+			}
+
+
+			while (begin1 <= end1 && begin2 <= end2)
+			{
+				if (compare(pArray[begin1], pArray[begin2]))
+				{
+					pTS[begin++] = pArray[begin2++];
+				}
+				else
+				{
+					pTS[begin++] = pArray[begin1++];
+				}
+			}
+			while (begin1 <= end1)
+			{
+				pTS[begin++] = pArray[begin1++];
+			}
+			while (begin2 <= end2)
+			{
+				pTS[begin++] = pArray[begin2++];
+			}
+			memcpy(pArray + start, pTS + start, sizeof(SortData) * (end2 - start + 1));
+		}
+	}
+	free(pTS);
+}
+```
+
+其中，条件语句的下标调整故意使得`begin2`>`end2`从而不进入下面的第一个循环。
+
+```c
+PerformanceTesting(10, Merge_sort_NonR)
+
+int main()
+{	
+	test_Merge_sort_NonR();
+	return 0;
+}
+```
+
+![image-20240912092136769](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409120921111.png)
+
+还有一种方法实现归并排序的非递归，与上面的思想大致相同，主要区别是，这种写法的是一层一层地覆写回原数组的，而上面的写法是一对一对地覆写回原数组了。
+
+为什么说是“一层一层”呢？这是从归并排序的递归角度来说的，很明显，在递归过程中，函数栈帧就像一棵树一样展开，这棵树的每一层都是把数组分成间隔不同的子数组，然后再逐个排序；
+
+```c
+void Merge_sort_NonR1(pSortData pArray, int Size)
+{
+	pSortData pTS = (pSortData)malloc(sizeof(SortData) * Size);
+	if (pTS == NULL)
+	{
+		perror("Merge_sort pTS fail");
+		return;
+	}
+	int gap;
+	for (gap = 1; gap < Size; gap *= 2)
+	{
+		int begin = 0;
+		while (begin < Size)
+		{
+			int begin1 = begin, end1 = begin1 + gap - 1;
+			int begin2 = end1 + 1, end2 = begin2 + gap - 1;
+
+			
+			if (end1 >= Size)
+			{
+				end1 = Size - 1;
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (begin2 >= Size)
+			{
+				end2 = Size - 1;
+				begin2 = end2 + 1;
+			}
+			if (end2 >= Size)
+			{
+				end2 = Size - 1;
+			}
+
+
+			while (begin1 <= end1 && begin2 <= end2)
+			{
+				if (compare(pArray[begin1], pArray[begin2]))
+				{
+					pTS[begin++] = pArray[begin2++];
+				}
+				else
+				{
+					pTS[begin++] = pArray[begin1++];
+				}
+			}
+			while (begin1 <= end1)
+			{
+				pTS[begin++] = pArray[begin1++];
+			}
+			while (begin2 <= end2)
+			{
+				pTS[begin++] = pArray[begin2++];
+			}
+		}
+		memcpy(pArray, pTS, sizeof(SortData) * Size);
+	}
+	free(pTS);
+}
+```
+
+差不多，这两种的关键都是控制下标不要越界。
+
+```c
+PerformanceTesting(10, Merge_sort_NonR1)
+
+int main()
+{	
+	test_Merge_sort_NonR1();
+	return 0;
+}
+```
+
+![image-20240912094039704](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409120940795.png)
 
 
 
