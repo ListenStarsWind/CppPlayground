@@ -461,7 +461,7 @@ int main()
 
 至于希尔排序的具体时间复杂度就不说了，一方面是，这和`intervals`的迭代公式有关；另一方面，这真的很难算。
 
-那到底多少呢？我也是听别人说的，大概是$O(N^{1.25})$到$O(1.6N^{1.25})$。
+那到底多少呢？我也是听别人说的，大概是$O(N^{1.25})$到$O(1.6N^{1.25})$。非要给具体值就是$O(N^{1.3})$。
 
 ### 选择排序
 
@@ -1043,6 +1043,114 @@ int main()
 
 除了栈之外，队列也可以实现快速排序的非递归版本，只不过此时它的遍历次序已经和递归完全不同了。此时它应该先把0,9压入队列，再弹出0,9；随后压入0,4和6,9；然后弹出0,4；压入0,1和3,4；然后弹出6,9，压入6,7和9······也就是说，它是层序遍历树的。这里就不详细说了。
 
+------
+
+在某些极端情况下，上述三种的快速排序可能会全部失效。什么情况呢？那就是整个数组的所有成员的数值都相同。此时，比如说，`right`就会去寻找比基准值小的数，可是，很明显，它找不到，于是它就越界了。
+
+为此，就有了“三路划分”。三路划分和以往的三套方法相比，有些根本上的不同。三路划分不像上述三套方法一样，对等于基准值的数值视而不见，而是想办法，把这些数值移到中间。于是在经过一轮排序之后，数组就可以被分成三个部分：左边的部分，存放着比基准值小的数值；中间的部分，存放着和基准值相同的数值；右边的部分，存放着比基准值大的值。
+
+在三路划分中，将会有三个指针：`left right curr`。`left`和`right`的初始位置仍然在数组两端，依旧把数组首元素视为基准值，`curr`最开始将会位于第二个成员处。之后`curr`将会对数组成员进行遍历，对于小于基准值的成员，将会与`left`指向的成员进行数值交换，这样做有两个目的：一是把比基准值小的数移到左边，二是把比基准值相同的数值往中间移；在进行完数值交换之后，`left`和`curr`都会向下移动一位；对于等于基准值的数，`curr`会直接移到下一位，将这些与基准值相同的成员交给`left`日后处理；如果成员大于基准值，`curr`指向的成员就会与`right`指向的成员进行数值交换，这样比基准值大的数值就被移到了右边，不过，由于不知道从`right`那边移过来的数值到底是什么情况，所以`curr`不会向后移一位，当然`right`确实会向前移一位；当`curr`到达`right`的右边时，就意味着，整个数组的全部成员都已经被`curr`遍历，比较过了，于是，这轮比较就结束了。
+
+为了方便起见，下面的动图没有考虑三数取中。
+
+![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409122026105.gif)
+
+```c
+static void _Quick_sort_root_particularly(pSortData pArray, int left, int right)
+{
+	if (left >= right)
+		return;
+
+	SortData key = pArray[left];
+	int begin = left;
+	int current = begin + 1;
+	int end = right;
+	while (current <= end)
+	{
+		if (pArray[current] < key)
+		{
+			Swap(&(pArray[begin++]), &(pArray[current++]));
+		}
+		else if (pArray[current] == key)
+		{
+			current++;
+		}
+		else if (pArray[current] > key)
+		{
+			Swap(&(pArray[end--]), &(pArray[current]));
+		}
+	}
+
+	_Quick_sort_root_particularly(pArray, left, begin - 1);
+	_Quick_sort_root_particularly(pArray, end + 1, right);
+}
+
+void Quick_sort_particularly(pSortData pArray, int Size)
+{
+	_Quick_sort_root_particularly(pArray, 0, Size - 1);
+}
+```
+
+```c
+PerformanceTesting(10, Quick_sort_particularly)
+
+int main()
+{	
+	test_Quick_sort_particularly();
+	return 0;
+}
+```
+
+当然，可以看到，我们之前写的比较函数还不够好，应该用整型或者其它类型，布尔值只有两个选项，而大小有三种可能：大于，小于，等于。应该用整型，大于0的代表大于，等于0的代表等于，小于0的代表小于。比较函数的缺陷之后我们还会再说。
+
+![image-20240913085445779](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409130854063.png)
+
+一般来说，这种级别的快排就没有什么问题了。但在某些在线编程测试平台上，即使是这种级别的快排依旧无法通过，无法通过的原因是因为上面的代码没有三数选中，所以效率有些低；但是，即使加上之前那三个方法的三数选中，依旧无法通过，因为，快排被这个平台恶意针对了，它的测试用例恰好是左中右就是极值，所以让三数选中失效了。
+
+不过，我们也有对策。解决方案是不把选中数组中间的成员作为三数中中间的那个数，而是从选中数组中随机找一个成员作为中间的值。
+
+```c
+int middle_of_three(pSortData pArray, int left, int right)
+{
+	srand((unsigned int)time(NULL));
+	int mid = left + (rand() % (right - left));
+	if (compare(pArray[left], pArray[mid]))
+	{
+		if (compare(pArray[mid], pArray[right]))
+		{
+			return mid;
+		}
+		else
+		{
+			if (compare(pArray[left], pArray[right]))
+			{
+				return right;
+			}
+			else
+				return left;
+		}
+	}
+	else
+	{
+		if (compare(pArray[right], pArray[mid]))
+		{
+			return mid;
+		}
+		else
+		{
+			if (compare(pArray[left], pArray[right]))
+			{
+				return left;
+			}
+			else
+				return right;
+		}
+	}
+}
+```
+
+不过日常情况下用不着使用这种级别的快排，上面三种就够用了，当然，更可以直接使用标准库里的快排。
+
 ### 归并排序
 
 归并排序使用的仍是分治的思想，它先将整个数组分成若干个子数组，然后再将这些子数组作进一步的拆分，直到拆分出的子数组一定是有序的。什么叫“一定有序”，很简单，拆的只剩一个成员它不就自然有序了。比如，对于一个有10个成员的数组来说，它先把这10个数组拆分成2个大小为5的子数组，下标分别是0到4, 5到9；然后再进一步拆分，拆成4个数组，下标分别是0到2, 3到4，5到7, 8到9,；随后再拆分，变成下标为0到1， 1到2， 3, 4， 5到6,  6到7, 8, 9········
@@ -1111,7 +1219,54 @@ void Merge_sort(pSortData pArray, int Size)
 
 ![image-20240911104406653](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409111044774.png)
 
--------
+归并排序的递归写法还有一些地方可以再优化优化。我们知道，递归其实就是把函数栈帧以树的形式组织起来。当归并排序输入的数据量过大时，这棵树就会有太多的细小分支，这些细小分支中的数组个数都很小，没必要让它再继续分支下去。于是我们就可以设计一种机制，当数组的成员个数小到一定程度时，调用其他排序算法对这个小数组进行排序，这样的话，这个小数组其实也算是被迫有序了，就可以参与到后续的合并过程中。而且由于树结构的特点，比如，现在假设归并排序的递归版本所运行的栈帧树就是一棵标准的满二叉树，这样的话，每个栈帧都可以被视为一个节点；此时，这棵树一共有$2^H-1$个节点，最后一层的节点数就是$2^{H - 1}$,倒数第二层就是$2^{H - 2}$,也就是说，最后一层大概占总结点数的50%，倒数第二层大概占总结点数的25.5%；而末端优化优化的正是这些更深处的层，于是，归并排序的总递归次数就少了不小。
+
+那到底该选择什么排序呢？我这里用的是插入排序，毕竟这里要排的数组只是一个小数组罢了，用不着快排，堆排，希尔之类，再加上插入排序并不会破坏归并排序的稳定性（后面会说的），所以，还是用它。
+
+具体改起来很简单
+
+```c
+void _Merge_sort_root(pSortData pArray, int left, int right, pSortData p_Temporary_Storage)
+{
+	if (left >= right)
+		return;
+	if (right - left + 1 < 10)
+	{
+		Insert_sort(pArray + left, right - left + 1);
+		return;
+	}
+	int mid = (left + right) / 2;
+	_Merge_sort_root(pArray, left, mid, p_Temporary_Storage);
+	_Merge_sort_root(pArray, mid + 1, right, p_Temporary_Storage);
+	int begin1 = left, end1 = mid;
+	int begin2 = mid + 1, end2 = right;
+	int begin = left;
+	while (begin1 <= end1 && begin2 <= end2)
+	{
+		if (compare(pArray[begin1], pArray[begin2]))
+		{
+			p_Temporary_Storage[begin++] = pArray[begin2++];
+		}
+		else
+		{
+			p_Temporary_Storage[begin++] = pArray[begin1++];
+		}
+	}
+	while (begin1 <= end1)
+	{
+		p_Temporary_Storage[begin++] = pArray[begin1++];
+	}
+	while (begin2 <= end2)
+	{
+		p_Temporary_Storage[begin++] = pArray[begin2++];
+	}
+	memcpy(pArray + left, p_Temporary_Storage + left, sizeof(SortData) * (right - left + 1));
+}
+```
+
+![image-20240912190529299](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409121905605.png)
+
+-----
 
 接下来我们说一说归并排序的非递归。
 
@@ -1277,6 +1432,100 @@ int main()
 ```
 
 ![image-20240912094039704](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409120940795.png)
+
+## 内排序和外排序
+
+之前我们在堆的章节说过，当数据量过大时，就无法将全部数据一次性压入内存。上面我们说的排序代码都是内排序，接下来我们将会学习外排序。所谓内排序就是在内存中对数据进行排序，外排序就是在外存（主要是硬盘）中对数据进行排序。
+
+那外排序到底怎么排的呢？实际上，我们用的仍然是归并排序的思想，所以我在上文说，“排序代码”而不是“排序”；它的思想是把大文件分成一个个小文件，小到其中的数据已经放得下内存里了，然后，使用内排序对这些数据进行排序，然后再写回到文件的原位置处，之后以文件访问的方式打开这些子文件，使用文件指针对其中的成员逐个访问，依次类推。
+
+由于时间关系，在此我们先只说思想。
+
+## 非比较排序
+
+上面我们说的排序都是比较排序，接下来我们说一说非比较排序，这种排序在日常生活中基本不会用到，主要是了解一下。
+
+非比较排序分为基数排序和计数排序。基数排序用的就是学前班数学的思路：有两个数，怎么比较大小？先看一下，它们的位数都一样的，那就比一下最高位，谁最高位大谁就大，一样就比较下一位，它真的没什么用。
+
+计数排序虽然在日常生活中也不会用到，但它具有很深的教育启蒙意义，往深了说，它是对哈希直接定址法的变形应用，这是C++里的，我就不深入讲了。
+
+计数排序具体怎么做呢？
+
+它首先会将要排序的数组遍历一遍，从而确定要排序数据的大致范围，然后依据这个范围开辟一个数组，接着再次遍历排序数组，对这些数据进行计数，遍历完后，对开辟数组的计数进行展开，就能得到有序数组，好吧，还是看动图吧。
+
+  ![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409131459388.gif)
+
+绝对映射就是1就对应下标1,2就对应下标2,3就对应下标3,100000就对应100000那种。如果这样映射，就要建13个成员的数组了。
+
+```c
+void count_sort(int* pArray, int Size)
+{
+	int min = pArray[0], max = pArray[0];
+	int current;
+	for (current = 0; current < Size; current++)
+	{
+		if (min > pArray[current])
+		{
+			min = pArray[current];
+		}
+		if (max < pArray[current])
+		{
+			max = pArray[current];
+		}
+	}
+	int temSize = max - min + 1;
+	int* p_tem = (int*)calloc(temSize, sizeof(int));
+	if (p_tem == NULL)
+	{
+		perror("count_sort malloc fail");
+		return;
+	}
+	for (current = 0; current < Size; current++)
+	{
+		p_tem[pArray[current] - min]++;
+	}
+	int i = 0;
+	for (current = 0; current < temSize; current++)
+	{
+		while (p_tem[current])
+		{
+			pArray[i++] = current + min;
+			p_tem[current]--;
+		}
+	}
+	free(p_tem);
+}
+```
+
+```c
+int main()
+{
+	int arr[] = { 4,7,15,6,7,8,9,5,6,15,13 };
+	int sz = sizeof(arr) / sizeof(arr[0]);
+	count_sort(arr, sz);
+	int i;
+	for (i = 0; i < sz; i++)
+	{
+		printf("%d ",arr[i]);
+	}
+	printf("\n");
+	return 0;
+}
+```
+
+很明显，计数排序很受数组数据范围的影响，所以不能使用通用测试模块，另外，你可能注意到，计数排序的数据类型用的全是原生类型，因为计数排序只能对整型，或者说整数进行排序，它的数据类型是被定死的。
+
+![image-20240913154406863](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409131544473.png)
+
+## 稳定性
+
+什么叫稳定性？可能有些人会将稳定性误以为是性能的稳定性，其实不是。在排序过程中，可能会有相同的数值成员，为了方便，我们就认为有两个相同的值，$A_1$和$A_2$，如果在排序之前，$A_1$在$A_2$的前面，排完序后，$A_1$依旧在$A_2$的前面，那这种算法就是稳定的，否则就是不稳定的。
+
+这是有实际应用价值的。描述某个事物，可能要不止一个数据，比如，它可能是个结构体，此时就要进行多次排序，优先级高的先排序，然后对于数值相同的，我们需要进行下一轮排序，此时的参考项就是优先级低一层的。
+
+比如，对于某场考试，它可能由多场科目构成，比如说，有科目ABC，优先级依次降低，我先比一下总分，然后再比一下A科，再比一下B科，接着是C科，此时的排序算法就必须是稳定的才行。
+
+冒泡是稳定的，对于相同的数值，不会进行交换；直接插入排序是稳定的，对于数值相同的项，我们是写在有序区后一位的；希尔排序只能保证子数组的稳定性，但整体稳定性就无法保证了；选择排序我就不分析了，直接举个反例：已知在数组中现有四个数：$A_1 A_2; B_1 B_2$,已知$A>B$，其中$A_1$是数组首元素，$A_2$夹在$B_1$和$A_1$之间；$A_2$在$A_1$之后，为了方便考虑，我们每轮就找一个极值，最小值；现在假设，$B$恰好即使是最小的那个值，于是在第一轮寻找中，$A_1$就会和$B_1$交换位置，这样，$A_1$就会在$A_2$后了，换言之，稳定性被破坏了；堆排序也不稳定，比如，现在要建一个小堆，根节点和左节点数值相同，根节点大于右节点，这样一交换，稳定性就被破坏了；快排不稳定，即使不考虑三数取中，它也是不稳的，当有两个比基准值大的相同值时，就不稳定了；归并，要看具体代码，比如在上面的代码中，如果等于，先写入的确实是`begin1`，所以是稳定的，如果else分支里写的是`begin2`那就不稳了，此时若要稳定，就需要在条件判断里加个等于号，不过由于这里的比较函数设计有缺陷，所以要仿照霍尔排序的那种取反来写。
 
 
 

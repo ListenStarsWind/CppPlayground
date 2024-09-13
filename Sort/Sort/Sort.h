@@ -3,6 +3,7 @@
 #include<stdbool.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 
 
 typedef int SortData, * pSortData;
@@ -27,8 +28,12 @@ int middle_of_three(pSortData pArray, int left, int right);
 
 void Quick_sort_NonR(pSortData pArray, int Size);
 
+void Quick_sort_particularly(pSortData pArray, int Size);
+
 void Merge_sort(pSortData pArray, int Size);
 
 void Merge_sort_NonR(pSortData pArray, int Size);
 
 void Merge_sort_NonR1(pSortData pArray, int Size);
+
+void count_sort(int* pArray, int Size);

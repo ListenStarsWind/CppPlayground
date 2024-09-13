@@ -264,9 +264,47 @@ void Quick_sort(pSortData pArray, int Size)
 	_Quick_sort_root(pArray, 0, Size - 1);
 }
 
+static void _Quick_sort_root_particularly(pSortData pArray, int left, int right)
+{
+	if (left >= right)
+		return;
+
+	int mid = middle_of_three(pArray, left, right);
+	Swap(&(pArray[mid]), &(pArray[left]));
+
+	SortData key = pArray[left];
+	int begin = left;
+	int current = begin + 1;
+	int end = right;
+	while (current <= end)
+	{
+		if (pArray[current] < key)
+		{
+			Swap(&(pArray[begin++]), &(pArray[current++]));
+		}
+		else if (pArray[current] == key)
+		{
+			current++;
+		}
+		else if (pArray[current] > key)
+		{
+			Swap(&(pArray[end--]), &(pArray[current]));
+		}
+	}
+
+	_Quick_sort_root_particularly(pArray, left, begin - 1);
+	_Quick_sort_root_particularly(pArray, end + 1, right);
+}
+
+void Quick_sort_particularly(pSortData pArray, int Size)
+{
+	_Quick_sort_root_particularly(pArray, 0, Size - 1);
+}
+
 int middle_of_three(pSortData pArray, int left, int right)
 {
-	int mid = (left + right) / 2;
+	srand((unsigned int)time(NULL));
+	int mid = left + (rand() % (right - left));
 	if (compare(pArray[left], pArray[mid]))
 	{
 		if (compare(pArray[mid], pArray[right]))
@@ -329,6 +367,11 @@ void _Merge_sort_root(pSortData pArray, int left, int right, pSortData p_Tempora
 {
 	if (left >= right)
 		return;
+	if (right - left + 1 < 10)
+	{
+		Insert_sort(pArray + left, right - left + 1);
+		return;
+	}
 	int mid = (left + right) / 2;
 	_Merge_sort_root(pArray, left, mid, p_Temporary_Storage);
 	_Merge_sort_root(pArray, mid + 1, right, p_Temporary_Storage);
@@ -492,4 +535,42 @@ void Merge_sort_NonR1(pSortData pArray, int Size)
 		memcpy(pArray, pTS, sizeof(SortData) * Size);
 	}
 	free(pTS);
+}
+
+void count_sort(int* pArray, int Size)
+{
+	int min = pArray[0], max = pArray[0];
+	int current;
+	for (current = 0; current < Size; current++)
+	{
+		if (min > pArray[current])
+		{
+			min = pArray[current];
+		}
+		if (max < pArray[current])
+		{
+			max = pArray[current];
+		}
+	}
+	int temSize = max - min + 1;
+	int* p_tem = (int*)calloc(temSize, sizeof(int));
+	if (p_tem == NULL)
+	{
+		perror("count_sort malloc fail");
+		return;
+	}
+	for (current = 0; current < Size; current++)
+	{
+		p_tem[pArray[current] - min]++;
+	}
+	int i = 0;
+	for (current = 0; current < temSize; current++)
+	{
+		while (p_tem[current])
+		{
+			pArray[i++] = current + min;
+			p_tem[current]--;
+		}
+	}
+	free(p_tem);
 }

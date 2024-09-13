@@ -1,5 +1,4 @@
 #include"Sort.h"
-#include<time.h>
 #include<stdio.h>
 #include<string.h>
 
@@ -79,10 +78,10 @@ pSortData pArray_copy(pSortData pSource, int Size)
 		printf("The " #Proceedings " runtime is %dms.\n", end-begin);\
     }														
 
-PerformanceTesting(10, Merge_sort_NonR1)
+PerformanceTesting(10, Quick_sort_particularly)
 
 int main()
 {	
-	test_Merge_sort_NonR1();
+	test_Quick_sort_particularly();
 	return 0;
 }
