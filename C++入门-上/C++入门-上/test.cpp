@@ -73,12 +73,14 @@ void Swap(double* x, double* y)
 //	return 0;
 //}
 
-int main()
-{
-	int i = 0;
-	double j = i;
-	return 0;
-}
+//int main()
+//{
+//	int i = 0;
+//	const double& j = i;
+//	std::cout << &i << std::endl;
+//	std::cout << &j << std::endl;
+//	return 0;
+//}
 
 //#include<assert.h>
 //
@@ -135,3 +137,60 @@ int main()
 //	SeqListPrint(ps);
 //	return 0;
 //}
+
+
+//#include"F.h"
+//
+//int main()
+//{
+//	int i = 3;
+//	int j = 3;
+//	int k = add(i, j);
+//	return 0;
+//}
+
+//int main()
+//{
+//	int i = 0;
+//	auto j = i;
+//	auto& k = i;
+//	std::cout << typeid(i).name() << std::endl;
+//	std::cout << typeid(j).name() << std::endl;
+//	std::cout << typeid(k).name() << std::endl;
+//	return 0;
+//}
+
+//int main()
+//{
+//	int Array[] = { 2,4,6,8 };
+//	for (auto& mem : Array)
+//	{
+//		std::cout << mem << " ";
+//		mem *= 2;
+//	}
+//	std::cout << std::endl;
+//	for (auto tem : Array)
+//	{
+//		std::cout << tem << " ";
+//	}
+//	std::cout << std::endl;
+//	return 0;
+//}
+
+void f(int)
+{
+	std::cout << "f(int)" << std::endl;
+}
+
+void f(int*)
+{
+	std::cout << "f(int*)" << std::endl;
+}
+
+int main()
+{
+	f(0);
+	f(NULL);
+	f((int*)NULL);
+	return 0;
+}
