@@ -1,3 +1,5 @@
+
+
 # Linux基本指令
 
 上节课中我们介绍了Linux的历史背景，并简要说明了我们搭建Linux的方式——云服务器，认识了Linux最本质的特征——开源。以及介绍了我们操控云服务器的方式：`XShell` ，下面我们将开始Linux基本指令的学习。
@@ -819,7 +821,947 @@ hello Linux 5020
 
 ```
 
+----------
 
+对于操作系统来说，时间是一个特别重要的概念。下面我们来学习Linux中与时间相关的指令。
+
+date可以以指定格式显示本地时间。格式为`date +%Y:%m:%d`；其中的"%Y"指年份，“%m”指月份，“%d”指日，其中的":"为分割符，可以替换成其它符号，所以说可以以指定格式显示。除了"%Y %m %d"之外，date还有其它时间占位符。
+
+%H : 小时
+%M : 分钟
+%S : 秒
+%X : 相当于 %H:%M:%S
+%d : 日 
+%m : 月份
+%Y : 年份 
+%F : 相当于 %Y-%m-%d
+
+```bash
+[wind@starry-sky ~]$ date +%Y
+2024
+[wind@starry-sky ~]$ date +%Y/%m
+2024/09
+[wind@starry-sky ~]$ date +%Y/%m/%d
+2024/09/23
+[wind@starry-sky ~]$ date +%Y/%m/%d-%H:%M:%S
+2024/09/23-15:06:35
+[wind@starry-sky ~]$ date +%Y-%m-%d_%H/%M/%S
+2024-09-23_15/07/15
+[wind@starry-sky ~]$ 
+
+```
+
+  除了显示本地时间外，date还可以显示时间戳。时间戳是从格林威治时间1970年1月1日午夜12点开始所经过的秒数，它为计算机提供了一个统一的参考时间，地球上的不同地区有不同的本地时间，但时间戳是绝对唯一的。date查看时间戳的用法是`date +%s`；把时间戳转化为本地时间的语法是`date -d@时间戳`；默认为英语时间格式，可以指定格式做本地化适应。
+
+```bash
+[wind@starry-sky ~]$ date +%s
+1727076076
+[wind@starry-sky ~]$ date -d@1727076076
+Mon Sep 23 15:21:16 CST 2024
+[wind@starry-sky ~]$ date -d@1727076076
+Mon Sep 23 15:21:16 CST 2024
+[wind@starry-sky ~]$ date -d@1727076076 +%Y/%m/%d-%H:%M:%S
+2024/09/23-15:21:16
+[wind@starry-sky ~]$ date +%s
+1727076328
+[wind@starry-sky ~]$ date -d@0
+Thu Jan  1 08:00:00 CST 1970
+[wind@starry-sky ~]$ date -d@0 +%Y/%m/%d-%H:%M:%S
+1970/01/01-08:00:00
+[wind@starry-sky ~]$ 转化成的是本地时间，在这里，是北京时间，所以0是8点^C
+[wind@starry-sky ~]$ 所以说，时间戳是唯一的，而各地有各自的时间^C
+[wind@starry-sky ~]$ 
+
+```
+
+当然，时间戳作为一个变量是存在溢出可能的，但这不是我们要担心的。会有人解决的。
+
+接下来是cal，cal指令其实没什么用，就是看日历的，带"-3"的选项表示查看前月本月下月的日历，"-j"显示今日为本年的第几日，"-y"显示今年所有月份的日历。
+
+```bash
+[wind@starry-sky ~]$ cal
+   September 2024   
+Su Mo Tu We Th Fr Sa
+ 1  2  3  4  5  6  7
+ 8  9 10 11 12 13 14
+15 16 17 18 19 20 21
+22 23 24 25 26 27 28
+29 30
+
+[wind@starry-sky ~]$ cal -3
+     August 2024         September 2024         October 2024    
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+             1  2  3   1  2  3  4  5  6  7         1  2  3  4  5
+ 4  5  6  7  8  9 10   8  9 10 11 12 13 14   6  7  8  9 10 11 12
+11 12 13 14 15 16 17  15 16 17 18 19 20 21  13 14 15 16 17 18 19
+18 19 20 21 22 23 24  22 23 24 25 26 27 28  20 21 22 23 24 25 26
+25 26 27 28 29 30 31  29 30                 27 28 29 30 31      
+                                                                
+[wind@starry-sky ~]$ cal -y
+                               2024                               
+
+       January               February                 March       
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+    1  2  3  4  5  6                1  2  3                   1  2
+ 7  8  9 10 11 12 13    4  5  6  7  8  9 10    3  4  5  6  7  8  9
+14 15 16 17 18 19 20   11 12 13 14 15 16 17   10 11 12 13 14 15 16
+21 22 23 24 25 26 27   18 19 20 21 22 23 24   17 18 19 20 21 22 23
+28 29 30 31            25 26 27 28 29         24 25 26 27 28 29 30
+                                              31
+        April                   May                   June        
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+    1  2  3  4  5  6             1  2  3  4                      1
+ 7  8  9 10 11 12 13    5  6  7  8  9 10 11    2  3  4  5  6  7  8
+14 15 16 17 18 19 20   12 13 14 15 16 17 18    9 10 11 12 13 14 15
+21 22 23 24 25 26 27   19 20 21 22 23 24 25   16 17 18 19 20 21 22
+28 29 30               26 27 28 29 30 31      23 24 25 26 27 28 29
+                                              30
+        July                  August                September     
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+    1  2  3  4  5  6                1  2  3    1  2  3  4  5  6  7
+ 7  8  9 10 11 12 13    4  5  6  7  8  9 10    8  9 10 11 12 13 14
+14 15 16 17 18 19 20   11 12 13 14 15 16 17   15 16 17 18 19 20 21
+21 22 23 24 25 26 27   18 19 20 21 22 23 24   22 23 24 25 26 27 28
+28 29 30 31            25 26 27 28 29 30 31   29 30
+
+       October               November               December      
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+       1  2  3  4  5                   1  2    1  2  3  4  5  6  7
+ 6  7  8  9 10 11 12    3  4  5  6  7  8  9    8  9 10 11 12 13 14
+13 14 15 16 17 18 19   10 11 12 13 14 15 16   15 16 17 18 19 20 21
+20 21 22 23 24 25 26   17 18 19 20 21 22 23   22 23 24 25 26 27 28
+27 28 29 30 31         24 25 26 27 28 29 30   29 30 31
+
+
+[wind@starry-sky ~]$ cal -j
+       September 2024      
+Sun Mon Tue Wed Thu Fri Sat
+245 246 247 248 249 250 251
+252 253 254 255 256 257 258
+259 260 261 262 263 264 265
+266 267 268 269 270 271 272
+273 274
+
+[wind@starry-sky ~]$ cal 2025
+                               2025                               
+
+       January               February                 March       
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+          1  2  3  4                      1                      1
+ 5  6  7  8  9 10 11    2  3  4  5  6  7  8    2  3  4  5  6  7  8
+12 13 14 15 16 17 18    9 10 11 12 13 14 15    9 10 11 12 13 14 15
+19 20 21 22 23 24 25   16 17 18 19 20 21 22   16 17 18 19 20 21 22
+26 27 28 29 30 31      23 24 25 26 27 28      23 24 25 26 27 28 29
+                                              30 31
+        April                   May                   June        
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+       1  2  3  4  5                1  2  3    1  2  3  4  5  6  7
+ 6  7  8  9 10 11 12    4  5  6  7  8  9 10    8  9 10 11 12 13 14
+13 14 15 16 17 18 19   11 12 13 14 15 16 17   15 16 17 18 19 20 21
+20 21 22 23 24 25 26   18 19 20 21 22 23 24   22 23 24 25 26 27 28
+27 28 29 30            25 26 27 28 29 30 31   29 30
+
+        July                  August                September     
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+       1  2  3  4  5                   1  2       1  2  3  4  5  6
+ 6  7  8  9 10 11 12    3  4  5  6  7  8  9    7  8  9 10 11 12 13
+13 14 15 16 17 18 19   10 11 12 13 14 15 16   14 15 16 17 18 19 20
+20 21 22 23 24 25 26   17 18 19 20 21 22 23   21 22 23 24 25 26 27
+27 28 29 30 31         24 25 26 27 28 29 30   28 29 30
+                       31
+       October               November               December      
+Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa   Su Mo Tu We Th Fr Sa
+          1  2  3  4                      1       1  2  3  4  5  6
+ 5  6  7  8  9 10 11    2  3  4  5  6  7  8    7  8  9 10 11 12 13
+12 13 14 15 16 17 18    9 10 11 12 13 14 15   14 15 16 17 18 19 20
+19 20 21 22 23 24 25   16 17 18 19 20 21 22   21 22 23 24 25 26 27
+26 27 28 29 30 31      23 24 25 26 27 28 29   28 29 30 31
+                       30
+
+[wind@starry-sky ~]$ 
+
+```
+
+--------
+
+下面是Linux中一个很重要的指令find。find指令有很多选项，顾名思义，它是用来找文件的。find的选项太多了，这里我们只说一种用法。find可以在指定路径下查找指定文件，格式为`find 路径 -name 文件名`
+
+```bash
+[wind@starry-sky ~]$ find ~ -name *.txt
+/home/wind/study/sour.txt
+/home/wind/sour.txt
+
+```
+
+使用find要注意账号权限，有些路径普通用户无法查找。权限不足。
+
+```bash
+[wind@starry-sky ~]$ find /root -name *.txt
+find: ‘/root’: Permission denied
+[wind@starry-sky ~]$ 
+
+```
+
+相比之下，which的路径是定死的，就是指令目录。除此之外还有一个叫whereis的指令，是在系统特殊路径，比如指令路径，手册路径，头文件路径什么的。
+
+```bash
+[wind@starry-sky ~]$ whereis stdlib.h
+stdlib: /usr/include/stdlib.h
+[wind@starry-sky ~]$ 
+
+```
+
+-------
+
+下面介绍grep指令，grep可以在文件中寻找指定字符串，并把符合要求的行打印出来，它是一个行文本过滤工具。
+
+```bash
+[wind@starry-sky ~]$ clear
+[wind@starry-sky ~]$ ll
+total 12
+drwxrwxr-x 3 wind wind 4096 Sep 19 21:57 d
+-rw-rw-r-- 1 wind wind   12 Sep 19 20:59 sour.txt
+drwxrwxr-x 2 wind wind 4096 Sep 20 16:52 study
+[wind@starry-sky ~]$ cd study
+[wind@starry-sky study]$ ll
+total 176
+-rw-rw-r-- 1 wind wind     24 Sep 20 12:23 dest.txt
+-rw-rw-r-- 1 wind wind 168894 Sep 20 15:10 newf.txt
+-rw-rw-r-- 1 wind wind    357 Sep 20 16:52 report.txt
+-rw-rw-r-- 1 wind wind      0 Sep 20 12:31 sour.txt
+[wind@starry-sky study]$ grep '921' newf.txt
+hello Linux 921
+hello Linux 1921
+hello Linux 2921
+hello Linux 3921
+hello Linux 4921
+hello Linux 5921
+hello Linux 6921
+hello Linux 7921
+hello Linux 8921
+hello Linux 9210
+hello Linux 9211
+hello Linux 9212
+hello Linux 9213
+hello Linux 9214
+hello Linux 9215
+hello Linux 9216
+hello Linux 9217
+hello Linux 9218
+hello Linux 9219
+hello Linux 9921
+[wind@starry-sky study]$ 只有包含"921"的行才会被打印出来^C
+[wind@starry-sky study]$ 为了方面实验，现在对newf.txt覆写些新内容^C
+[wind@starry-sky study]$ > newf.txt
+[wind@starry-sky study]$ ll
+total 8
+-rw-rw-r-- 1 wind wind  24 Sep 20 12:23 dest.txt
+-rw-rw-r-- 1 wind wind   0 Sep 23 17:12 newf.txt
+-rw-rw-r-- 1 wind wind 357 Sep 20 16:52 report.txt
+-rw-rw-r-- 1 wind wind   0 Sep 20 12:31 sour.txt
+[wind@starry-sky study]$ echo "hello world" >> newf.txt
+[wind@starry-sky study]$ echo "hello Linux" >> newf.txt
+[wind@starry-sky study]$ echo "welcom to wind" >> newf.txt
+[wind@starry-sky study]$ echo "hello WorLD" >> newf.txt
+[wind@starry-sky study]$ echo "" >> newf.txt
+[wind@starry-sky study]$ echo "hello LINUX" >> newf.txt
+[wind@starry-sky study]$ echo "12345678" >> newf.txt
+[wind@starry-sky study]$ cat newf.txt
+hello world
+hello Linux
+welcom to wind
+hello WorLD
+
+hello LINUX
+12345678
+[wind@starry-sky study]$ grep "world" newf.txt
+hello world
+[wind@starry-sky study]$ 带上"-v"选项反向筛选^C
+[wind@starry-sky study]$ grep -v "world" newf.txt
+hello Linux
+welcom to wind
+hello WorLD
+
+hello LINUX
+12345678
+[wind@starry-sky study]$ 带上"-n"选项打印行号^C
+[wind@starry-sky study]$ grep -vn "world" newf.txt
+2:hello Linux
+3:welcom to wind
+4:hello WorLD
+5:
+6:hello LINUX
+7:12345678
+[wind@starry-sky study]$ cat -n newf.txt
+     1	hello world
+     2	hello Linux
+     3	welcom to wind
+     4	hello WorLD
+     5	
+     6	hello LINUX
+     7	12345678
+[wind@starry-sky study]$ 空字符则全部选中^C
+[wind@starry-sky study]$ grep -n "" newf.txt
+1:hello world
+2:hello Linux
+3:welcom to wind
+4:hello WorLD
+5:
+6:hello LINUX
+7:12345678
+[wind@starry-sky study]$ 选项"-i"忽略大小写^C
+[wind@starry-sky study]$ grep -n "world" newf.txt
+1:hello world
+[wind@starry-sky study]$ grep -ni "world" newf.txt
+1:hello world
+4:hello WorLD
+[wind@starry-sky study]$ grep -ni "linux" newf.txt
+2:hello Linux
+6:hello LINUX
+[wind@starry-sky study]$ cat newf.txt | grep -ni "linux"
+2:hello Linux
+6:hello LINUX
+[wind@starry-sky study]$ 另外，grep也是可以对路径进行筛选，不过要加"-R"选项^C
+[wind@starry-sky study]$ 此时它会把该路径下的所有携带指定字符串的文件中的满足行号显示出来，我这里没什么文件，就不做示例了^C
+[wind@starry-sky study]$ 
+
+```
+
+------
+
+下面我们谈谈Linux中的打包压缩操作，Linux支持的压缩格式非常多，这里只说一两个。
+
+```bash
+[wind@starry-sky study]$ 为什么计算机要进行打包和压缩呢？^C
+[wind@starry-sky study]$ 打包是为了让多个文件变为一个文件^C
+[wind@starry-sky study]$ 这可以减少文件缺失的可能^C
+[wind@starry-sky study]$ 如果一个项目有很多文件，结果传输过后，偏偏少一个文件，那就不好了^C
+[wind@starry-sky study]$ 压缩可以让文件存储空间变小^C
+[wind@starry-sky study]$ 这样进行传输的时候就能少等一会时间，也能减少服务器的存储开销^C
+[wind@starry-sky study]$ 我们先介绍Linux下的zip压缩，因为zip在windows里常见，方便服务器与windows交流^C
+[wind@starry-sky study]$ 然后再介绍tar,它是Linux里的主流打包压缩指令^C
+[wind@starry-sky study]$ 我先创建一个子树，用来做实验材料^C
+[wind@starry-sky study]$ pwd
+/home/wind/study
+[wind@starry-sky study]$ ll
+total 12
+-rw-rw-r-- 1 wind wind  24 Sep 20 12:23 dest.txt
+-rw-rw-r-- 1 wind wind  73 Sep 23 17:17 newf.txt
+-rw-rw-r-- 1 wind wind 357 Sep 20 16:52 report.txt
+-rw-rw-r-- 1 wind wind   0 Sep 20 12:31 sour.txt
+[wind@starry-sky study]$ mkdir -r d1/d2/d3/d4
+mkdir: invalid option -- 'r'
+Try 'mkdir --help' for more information.
+[wind@starry-sky study]$ mkdir -p d1/d2/d3/d4
+[wind@starry-sky study]$ tree .
+.
+├── d1
+│   └── d2
+│       └── d3
+│           └── d4
+├── dest.txt
+├── newf.txt
+├── report.txt
+└── sour.txt
+
+4 directories, 4 files
+[wind@starry-sky study]$ ll
+total 16
+drwxrwxr-x 3 wind wind 4096 Sep 23 18:05 d1
+-rw-rw-r-- 1 wind wind   24 Sep 20 12:23 dest.txt
+-rw-rw-r-- 1 wind wind   73 Sep 23 17:17 newf.txt
+-rw-rw-r-- 1 wind wind  357 Sep 20 16:52 report.txt
+-rw-rw-r-- 1 wind wind    0 Sep 20 12:31 sour.txt
+[wind@starry-sky study]$ cp report.txt ./d1/d2/f1.txt
+[wind@starry-sky study]$ cd d1
+[wind@starry-sky d1]$ touch f2.txt
+[wind@starry-sky d1]$ cd d2/d3
+[wind@starry-sky d3]$ touch f3.txt
+[wind@starry-sky d3]$ cd ~
+[wind@starry-sky ~]$ ll
+total 12
+drwxrwxr-x 3 wind wind 4096 Sep 19 21:57 d
+-rw-rw-r-- 1 wind wind   12 Sep 19 20:59 sour.txt
+drwxrwxr-x 3 wind wind 4096 Sep 23 18:05 study
+[wind@starry-sky ~]$ cd study
+[wind@starry-sky study]$ ls
+d1  dest.txt  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ tree .
+.
+├── d1
+│   ├── d2
+│   │   ├── d3
+│   │   │   ├── d4
+│   │   │   └── f3.txt
+│   │   └── f1.txt
+│   └── f2.txt
+├── dest.txt
+├── newf.txt
+├── report.txt
+└── sour.txt
+
+4 directories, 7 files
+[wind@starry-sky study]$ cat ./d1/d2/f1.txt
+hello Linux 5000
+hello Linux 5001
+hello Linux 5002
+hello Linux 5003
+hello Linux 5004
+hello Linux 5005
+hello Linux 5006
+hello Linux 5007
+hello Linux 5008
+hello Linux 5009
+hello Linux 5010
+hello Linux 5011
+hello Linux 5012
+hello Linux 5013
+hello Linux 5014
+hello Linux 5015
+hello Linux 5016
+hello Linux 5017
+hello Linux 5018
+hello Linux 5019
+hello Linux 5020
+[wind@starry-sky study]$ zip --version
+Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.
+This is Zip 3.0 (July 5th 2008), by Info-ZIP.
+Currently maintained by E. Gordon.  Please send bug reports to
+the authors using the web page at www.info-zip.org; see README for details.
+
+Latest sources and executables are at ftp://ftp.info-zip.org/pub/infozip,
+as of above date; see http://www.info-zip.org/ for other sites.
+
+Compiled with gcc 4.8.5 20150623 (Red Hat 4.8.5-11) for Unix (Linux ELF) on Nov  5 2016.
+
+Zip special compilation options:
+	USE_EF_UT_TIME       (store Universal Time)
+	BZIP2_SUPPORT        (bzip2 library version 1.0.6, 6-Sept-2010)
+	    bzip2 code and library copyright (c) Julian R Seward
+	    (See the bzip2 license for terms of use)
+	SYMLINK_SUPPORT      (symbolic links supported)
+	LARGE_FILE_SUPPORT   (can read and write large files on file system)
+	ZIP64_SUPPORT        (use Zip64 to store large files in archives)
+	UNICODE_SUPPORT      (store and read UTF-8 Unicode paths)
+	STORE_UNIX_UIDs_GIDs (store UID/GID sizes/values using new extra field)
+	UIDGID_NOT_16BIT     (old Unix 16-bit UID/GID extra field not used)
+	[encryption, version 2.91 of 05 Jan 2007] (modified for Zip 3)
+
+Encryption notice:
+	The encryption code of this program is not copyrighted and is
+	put in the public domain.  It was originally written in Europe
+	and, to the best of our knowledge, can be freely distributed
+	in both source and object forms from any country, including
+	the USA under License Exception TSU of the U.S. Export
+	Administration Regulations (section 740.13(e)) of 6 June 2002.
+
+Zip environment options:
+             ZIP:  [none]
+          ZIPOPT:  [none]
+[wind@starry-sky study]$ 好的，看样子这个系统上是有zip的^C
+[wind@starry-sky study]$ 对路径进行压缩需要带上选项"-r"^C
+[wind@starry-sky study]$ ls
+d1  dest.txt  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ zip -r d1.zip d1
+  adding: d1/ (stored 0%)
+  adding: d1/d2/ (stored 0%)
+  adding: d1/d2/f1.txt (deflated 79%)
+  adding: d1/d2/d3/ (stored 0%)
+  adding: d1/d2/d3/f3.txt (stored 0%)
+  adding: d1/d2/d3/d4/ (stored 0%)
+  adding: d1/f2.txt (stored 0%)
+[wind@starry-sky study]$ ls
+d1  d1.zip  dest.txt  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ mv d1.zip ..
+[wind@starry-sky study]$ cd ..
+[wind@starry-sky ~]$ ls
+d  d1.zip  sour.txt  study
+[wind@starry-sky ~]$ tree d
+d
+└── d2
+    └── d3
+
+2 directories, 0 files
+[wind@starry-sky ~]$ rm -rf d
+[wind@starry-sky ~]$ 接下来是解压缩^C
+[wind@starry-sky ~]$ unzip d1.zip
+-bash: unzip: command not found
+[wind@starry-sky ~]$ ls
+d1.zip  sour.txt  study
+[wind@starry-sky ~]$ unzip d1.zip
+-bash: unzip: command not found
+[wind@starry-sky ~]$ which unzip
+/usr/bin/which: no unzip in (/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/wind/.local/bin:/home/wind/bin)
+[wind@starry-sky ~]$ which zip
+/usr/bin/zip
+[wind@starry-sky ~]$ 好的，没有unzip,看来要安装一下^C
+[wind@starry-sky ~]$ 我们换回rott账号，安装一下^C
+[wind@starry-sky ~]$ 哦，是root,打错了^C
+[wind@starry-sky ~]$ su -root
+su: invalid option -- 'r'
+
+Usage:
+ su [options] [-] [USER [arg]...]
+
+Change the effective user id and group id to that of USER.
+A mere - implies -l.   If USER not given, assume root.
+
+Options:
+ -m, -p, --preserve-environment  do not reset environment variables
+ -g, --group <group>             specify the primary group
+ -G, --supp-group <group>        specify a supplemental group
+
+ -, -l, --login                  make the shell a login shell
+ -c, --command <command>         pass a single command to the shell with -c
+ --session-command <command>     pass a single command to the shell with -c
+                                 and do not create a new session
+ -f, --fast                      pass -f to the shell (for csh or tcsh)
+ -s, --shell <shell>             run shell if /etc/shells allows it
+
+ -h, --help     display this help and exit
+ -V, --version  output version information and exit
+
+For more details see su(1).
+[wind@starry-sky ~]$ su
+Password: 
+[root@starry-sky wind]# 直接输入su回车后输root密码^C
+[root@starry-sky wind]# yum install zip unzip
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+Package zip-3.0-11.el7.x86_64 already installed and latest version
+Resolving Dependencies
+--> Running transaction check
+---> Package unzip.x86_64 0:6.0-24.el7_9 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+=============================================================================================================================================
+ Package                        Arch                            Version                               Repository                        Size
+=============================================================================================================================================
+Installing:
+ unzip                          x86_64                          6.0-24.el7_9                          updates                          172 k
+
+Transaction Summary
+=============================================================================================================================================
+Install  1 Package
+
+Total download size: 172 k
+Installed size: 369 k
+Is this ok [y/d/N]: y
+Downloading packages:
+unzip-6.0-24.el7_9.x86_64.rpm                                                                                         | 172 kB  00:00:00     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : unzip-6.0-24.el7_9.x86_64                                                                                                 1/1 
+  Verifying  : unzip-6.0-24.el7_9.x86_64                                                                                                 1/1 
+
+Installed:
+  unzip.x86_64 0:6.0-24.el7_9                                                                                                                
+
+Complete!
+[root@starry-sky wind]# which unzip
+/usr/bin/unzip
+[root@starry-sky wind]# OK,好的，安装上了，切回普通账号^C
+[root@starry-sky wind]# su wind
+[wind@starry-sky ~]$ ls
+d1.zip  sour.txt  study
+[wind@starry-sky ~]$ unzip d1.zip
+Archive:  d1.zip
+   creating: d1/
+   creating: d1/d2/
+  inflating: d1/d2/f1.txt            
+   creating: d1/d2/d3/
+ extracting: d1/d2/d3/f3.txt         
+   creating: d1/d2/d3/d4/
+ extracting: d1/f2.txt               
+[wind@starry-sky ~]$ ls
+d1  d1.zip  sour.txt  study
+[wind@starry-sky ~]$ tree d1
+d1
+├── d2
+│   ├── d3
+│   │   ├── d4
+│   │   └── f3.txt
+│   └── f1.txt
+└── f2.txt
+
+3 directories, 3 files
+[wind@starry-sky ~]$ cat ./d1/d2/f1.txt
+hello Linux 5000
+hello Linux 5001
+hello Linux 5002
+hello Linux 5003
+hello Linux 5004
+hello Linux 5005
+hello Linux 5006
+hello Linux 5007
+hello Linux 5008
+hello Linux 5009
+hello Linux 5010
+hello Linux 5011
+hello Linux 5012
+hello Linux 5013
+hello Linux 5014
+hello Linux 5015
+hello Linux 5016
+hello Linux 5017
+hello Linux 5018
+hello Linux 5019
+hello Linux 5020
+[wind@starry-sky ~]$ 没问题，没丢东西。^C
+[wind@starry-sky ~]$ rm d1.zip
+[wind@starry-sky ~]$ cd study
+[wind@starry-sky study]$ ls
+d1  dest.txt  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ 也可以路径文件一块打包压缩^C
+[wind@starry-sky study]$ zip -r d.zip d1 dest.txt
+  adding: d1/ (stored 0%)
+  adding: d1/d2/ (stored 0%)
+  adding: d1/d2/f1.txt (deflated 79%)
+  adding: d1/d2/d3/ (stored 0%)
+  adding: d1/d2/d3/f3.txt (stored 0%)
+  adding: d1/d2/d3/d4/ (stored 0%)
+  adding: d1/f2.txt (stored 0%)
+  adding: dest.txt (deflated 8%)
+[wind@starry-sky study]$ ls
+d1  dest.txt  d.zip  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ rm -rf d1
+[wind@starry-sky study]$ rm -f dest.txt
+[wind@starry-sky study]$ ls
+d.zip  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ unzip d.zip
+Archive:  d.zip
+   creating: d1/
+   creating: d1/d2/
+  inflating: d1/d2/f1.txt            
+   creating: d1/d2/d3/
+ extracting: d1/d2/d3/f3.txt         
+   creating: d1/d2/d3/d4/
+ extracting: d1/f2.txt               
+  inflating: dest.txt                
+[wind@starry-sky study]$ ls
+d1  dest.txt  d.zip  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ mkdir test
+[wind@starry-sky study]$ ls
+d1  dest.txt  d.zip  newf.txt  report.txt  sour.txt  test
+[wind@starry-sky study]$ 也可以解压到指定路径下^C
+[wind@starry-sky study]$ unzip d.zip -d ./test
+Archive:  d.zip
+   creating: ./test/d1/
+   creating: ./test/d1/d2/
+  inflating: ./test/d1/d2/f1.txt     
+   creating: ./test/d1/d2/d3/
+ extracting: ./test/d1/d2/d3/f3.txt  
+   creating: ./test/d1/d2/d3/d4/
+ extracting: ./test/d1/f2.txt        
+  inflating: ./test/dest.txt         
+[wind@starry-sky study]$ tree ./test
+./test
+├── d1
+│   ├── d2
+│   │   ├── d3
+│   │   │   ├── d4
+│   │   │   └── f3.txt
+│   │   └── f1.txt
+│   └── f2.txt
+└── dest.txt
+
+4 directories, 4 files
+[wind@starry-sky study]$ rm -rf test
+[wind@starry-sky study]$ rm d.zip
+[wind@starry-sky study]$ cd ..
+[wind@starry-sky ~]$ ls
+d1  sour.txt  study
+[wind@starry-sky ~]$ tree d1
+d1
+├── d2
+│   ├── d3
+│   │   ├── d4
+│   │   └── f3.txt
+│   └── f1.txt
+└── f2.txt
+
+3 directories, 3 files
+[wind@starry-sky ~]$ rm -rf d1
+[wind@starry-sky ~]$ ll
+total 8
+-rw-rw-r-- 1 wind wind   12 Sep 19 20:59 sour.txt
+drwxrwxr-x 3 wind wind 4096 Sep 23 18:34 study
+[wind@starry-sky ~]$ cd study
+[wind@starry-sky study]$ ls
+d1  dest.txt  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ ll
+total 16
+drwxrwxr-x 3 wind wind 4096 Sep 23 18:10 d1
+-rw-rw-r-- 1 wind wind   24 Sep 20 12:23 dest.txt
+-rw-rw-r-- 1 wind wind   73 Sep 23 17:17 newf.txt
+-rw-rw-r-- 1 wind wind  357 Sep 20 16:52 report.txt
+-rw-rw-r-- 1 wind wind    0 Sep 20 12:31 sour.txt
+[wind@starry-sky study]$ 
+
+```
+
+下面说tar指令
+
+```bas
+[wind@starry-sky study]$ tar选项也挺多的，这里我一套一道地说，如果对压缩格式有特殊需求，去网上搜一下，带系统名去搜，比如我是CentOS^C
+[wind@starry-sky study]$ tar czf^C
+[wind@starry-sky study]$ c指创建，创建打包后的那一个文件；z以zip格式压缩；f命名压缩后的文件名^C
+[wind@starry-sky study]$ tar压缩路径不用再带-r^C
+[wind@starry-sky study]$ tar -czf d.tar.gz^C
+[wind@starry-sky study]$ 算了，省略一下^C
+[wind@starry-sky study]$ tar -czf d.tgz d1 dest.txt sour.txt
+[wind@starry-sky study]$ ls
+d1  dest.txt  d.tgz  newf.txt  report.txt  sour.txt
+[wind@starry-sky study]$ mkdir test
+[wind@starry-sky study]$ ls
+d1  dest.txt  d.tgz  newf.txt  report.txt  sour.txt  test
+[wind@starry-sky study]$ -t选项，预览压缩包里的文件，具体内容看不到^C
+[wind@starry-sky study]$ 有些系统对于该指令似乎不支持选项前加"-"，可以把"-"去掉后再试一试^C
+[wind@starry-sky study]$ tar -t d.tgz
+^C
+[wind@starry-sky study]$ tar -tzf d.tgz
+d1/
+d1/d2/
+d1/d2/f1.txt
+d1/d2/d3/
+d1/d2/d3/f3.txt
+d1/d2/d3/d4/
+d1/f2.txt
+dest.txt
+sour.txt
+[wind@starry-sky study]$ 解压缩格式：tar -xzf 压缩文件名^C
+[wind@starry-sky study]$ x:解压缩，z:zip格式，f：后面接压缩文件名^C
+[wind@starry-sky study]$ -C：解压到指定路径下^C
+[wind@starry-sky study]$ tar -xzfC d.tgz test
+tar (child): C: Cannot open: No such file or directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+[wind@starry-sky study]$ ls test
+[wind@starry-sky study]$ tar -xzf d.tgz -C ./test
+[wind@starry-sky study]$ ls test
+d1  dest.txt  sour.txt
+[wind@starry-sky study]$ tree test
+test
+├── d1
+│   ├── d2
+│   │   ├── d3
+│   │   │   ├── d4
+│   │   │   └── f3.txt
+│   │   └── f1.txt
+│   └── f2.txt
+├── dest.txt
+└── sour.txt
+
+4 directories, 5 files
+[wind@starry-sky study]$ 好的，第二次解压缩成功了^C
+[wind@starry-sky study]$ teee .
+bash: teee: command not found
+[wind@starry-sky study]$ 
+
+```
+
+-----
+
+bc指令，bc就是Linux的计算器，和Windows上的图形化计算器都是一样的。
+
+```bash
+[wind@starry-sky study]$ bc怎么用呢？^C
+[wind@starry-sky study]$ 可以直接用，键入bc之后回车^C
+[wind@starry-sky study]$ bc
+bc 1.06.95
+Copyright 1991-1994, 1997, 1998, 2000, 2004, 2006 Free Software Foundation, Inc.
+This is free software with ABSOLUTELY NO WARRANTY.
+For details type `warranty'. 
+10 + 3
+13
+3.14 * 7
+21.98
+7 + 4
+11
+quit
+[wind@starry-sky study]$ 输入quit回车后就可以退出了^C
+[wind@starry-sky study]$ 不过实际上一般不这样用^C
+[wind@starry-sky study]$ 一般把bc和管道文件结合^C
+[wind@starry-sky study]$ echo "1+2+3" | bc
+6
+[wind@starry-sky study]$ echo "3.14*7" | bc
+21.98
+[wind@starry-sky study]$ echo "10/3" | bc
+3
+[wind@starry-sky study]$ bc好像也可以调一下精度，这样10/3就不是3了，但这里就不说了，计算器而已，大不了自己写一个程序^C
+[wind@starry-sky study]$ 
+
+```
+
+------------
+
+指令uname可以查看系统版本，电脑硬件相关信息。
+
+a或–all 详细输出所有信息，依次为内核名称，主机名，内核版本号，内核版本，硬件名，处理器类型，硬件平台类型，操作系统名称  
+
+![image-20240923202044129](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409232020364.png)
+
+-----------
+
+热键Tab，具有命令补全和档案补全功能
+
+```bash
+[wind@starry-sky study]$ 比如，输入“wh”之后，按两下Tab键^C
+[wind@starry-sky study]$ wh
+whatis    whereis   which     while     whiptail  who       whoami   
+[wind@starry-sky study]$ 输入“whic”之后，再按一下Tab^C
+[wind@starry-sky study]$ which ^C
+[wind@starry-sky study]$ 他就可以自动补全指令^C
+[wind@starry-sky study]$ 
+
+```
+
+热键ctrl+r，可以查询历史指令
+
+```bash
+(reverse-i-search)`tar': ^Cr -xzf d.tgz -C ./test
+(reverse-i-search)`which': ^Cich pwd
+[wind@starry-sky study]$ 键入Ctrl+R回车，就会出现(reverse-i-search)，然后你输指令就行，它会根据你的输入去查询最近1000多个历史指令^C
+[wind@starry-sky study]$ 为什么是1000多个呢？因为再往前的已经被覆写掉了，Linux只保存最近的1000多行历史指令，不过有的只有500行^C
+[wind@starry-sky study]$ 
+
+```
+
+指令histroy可以查询最近的历史指令，到底展示多少行视具体情况来定。
+
+热键Ctrl+d可以退出xshell，第一次按下是退出当前账号，第二次是退出xshell本身。
+
+------
+
+```bash
+[wind@starry-sky ~]$ 接下来我们了解一下Linux中的记事本——nano^C
+[wind@starry-sky ~]$ 和Windows里的记事本一样，我们以后很少使用nano，所以说了解^C
+[wind@starry-sky ~]$ 在使用nano之前，我们要先看看系统里到底有没有nano^C
+[wind@starry-sky ~]$ which nano
+/usr/bin/which: no nano in (/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/wind/.local/bin:/home/wind/bin)
+[wind@starry-sky ~]$ 看来没有，那就安装一下吧^C
+[wind@starry-sky ~]$ su -
+Password: 
+su: Authentication failure
+[wind@starry-sky ~]$ su -
+Password: 
+Last login: Mon Sep 23 18:24:39 CST 2024 on pts/0
+Last failed login: Mon Sep 23 21:01:36 CST 2024 on pts/0
+There was 1 failed login attempt since the last successful login.
+[root@starry-sky ~]# sudo yum install nano
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+Resolving Dependencies
+--> Running transaction check
+---> Package nano.x86_64 0:2.3.1-10.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+=============================================================================================================================================
+ Package                        Arch                             Version                                Repository                      Size
+=============================================================================================================================================
+Installing:
+ nano                           x86_64                           2.3.1-10.el7                           base                           440 k
+
+Transaction Summary
+=============================================================================================================================================
+Install  1 Package
+
+Total download size: 440 k
+Installed size: 1.6 M
+Is this ok [y/d/N]: y
+Downloading packages:
+nano-2.3.1-10.el7.x86_64.rpm                                                                                          | 440 kB  00:00:00     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : nano-2.3.1-10.el7.x86_64                                                                                                  1/1 
+  Verifying  : nano-2.3.1-10.el7.x86_64                                                                                                  1/1 
+
+Installed:
+  nano.x86_64 0:2.3.1-10.el7                                                                                                                 
+
+Complete!
+[root@starry-sky ~]# which nano
+/bin/nano
+[root@starry-sky ~]# 装好了^C
+[root@starry-sky ~]# su wind
+[wind@starry-sky root]$ 现在我们来用一下^C
+[wind@starry-sky root]$ cd ~
+[wind@starry-sky ~]$ cd study
+[wind@starry-sky study]$ ll
+total 24
+drwxrwxr-x 3 wind wind 4096 Sep 23 18:10 d1
+-rw-rw-r-- 1 wind wind   24 Sep 20 12:23 dest.txt
+-rw-rw-r-- 1 wind wind  361 Sep 23 18:52 d.tgz
+-rw-rw-r-- 1 wind wind   73 Sep 23 17:17 newf.txt
+-rw-rw-r-- 1 wind wind  357 Sep 20 16:52 report.txt
+-rw-rw-r-- 1 wind wind    0 Sep 20 12:31 sour.txt
+drwxrwxr-x 3 wind wind 4096 Sep 23 19:13 test
+[wind@starry-sky study]$ cd test
+[wind@starry-sky test]$ ls
+d1  dest.txt  sour.txt
+[wind@starry-sky test]$ rm -rf d1 dest.txt 
+[wind@starry-sky test]$ ls
+sour.txt
+[wind@starry-sky test]$ ll
+total 0
+-rw-rw-r-- 1 wind wind 0 Sep 20 12:31 sour.txt
+[wind@starry-sky test]$ cat sour.txt
+[wind@starry-sky test]$ mv sour.txt test.c
+[wind@starry-sky test]$ ls
+test.c
+[wind@starry-sky test]$ nano test.c
+[wind@starry-sky test]$ 代码写好之后，输入ctrl+x,输入y保存，回车退出^C
+[wind@starry-sky test]$ cat test.c
+#include<stdio.h>
+
+int main()
+{
+//记事本就不要那么讲究了
+//Ctrl+x保存并退出
+ peintf("hello nano/n");return 0;
+}
+[wind@starry-sky test]$ 使用gcc编译一下^C
+[wind@starry-sky test]$ gcc test.c
+/tmp/ccWSLLNN.o: In function `main':
+test.c:(.text+0xf): undefined reference to `peintf'
+collect2: error: ld returned 1 exit status
+[wind@starry-sky test]$ 敲错了，改一下^C
+[wind@starry-sky test]$ nano test.c
+[wind@starry-sky test]$ cat test.c
+#include<stdio.h>
+
+int main()
+{
+//记事本就不要那么讲究了
+//Ctrl+x保存并退出
+ printf("hello nano/n");return 0;
+}
+[wind@starry-sky test]$ gcc test.c
+[wind@starry-sky test]$ ls
+a.out  test.c
+[wind@starry-sky test]$ 执行一下^C
+[wind@starry-sky test]$ ./a.out
+hello nano/n[wind@starry-sky test]$ 诶呀，换行符也敲错了，算了，就这样了^C
+[wind@starry-sky test]$ 
+
+```
+
+-----------
+
+下面我们大致说一说Linux里的指令是怎么运行的。Linux里的指令和其它操作系统，比如说安卓，苹果，Windows的图形化界面其实都发挥同样的功能：作为用户和操作系统沟通的桥梁，对于一般人来说，直接操作操作系统实在是太难了，所以就有了命令行解释器和图形化界面这类中间角色，它们将用户的需求翻译成具体的命令，通过调用系统提供的一系列接口完成特定的需求，然后再把操作系统的反馈翻译成用户能够理解的信息；除此之外，这类中间角色还可以避免用户直接对系统进行操作，从而变相的保护系统本身，当用户提出了危害系统的需求时，中间角色可以直接拦截用户需求，从而保护系统的正常运行。有点面向对象的感觉。
+
+`shell`是对命令行解释器的统称，而`bash sh`则是具体的命令行解释器，在Linux里，这三个概念都可以认为是指代命令行解释器。
+
+我们说的Linux，一般不是光指Linux本身，而是指包括Linux操作系统本身及基于Linux的各种软件。
 
 # 完
 
