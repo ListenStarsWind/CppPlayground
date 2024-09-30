@@ -24,14 +24,28 @@ wind::stack::stack(size_t sz, p_stack_data pArr)
 
 wind::stack::~stack()
 {
+    //std::cout << "~stack()" << std::endl;
     free(_p);
     _p = nullptr;
     _top = _capacity = 0;
 }
 
+wind::stack::stack(const stack& s)
+{
+    _top = s._top;
+    _capacity = s._capacity;
+    _p = (p_stack_data)malloc(sizeof(stack_data) * _capacity);
+    if (_p == nullptr)
+    {
+        perror("stack copy fail");
+        exit(-1);
+    }
+    memcpy(_p, s._p, sizeof(stack_data) * _top);
+}
+
 void wind::stack::Ext()
 {
-    int newCapacity = _capacity == 0 ? 2 : _capacity * 2;
+    size_t newCapacity = _capacity == 0 ? 2 : _capacity * 2;
     p_stack_data p = (p_stack_data)realloc(_p, sizeof(stack_data) * newCapacity);
     if (p == nullptr)
     {

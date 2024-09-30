@@ -1,6 +1,7 @@
 #include"stack.h"
 #include<time.h>
-#include"vld.h"
+//#include"vld.h"
+#include"Date.h"
 
 #define N 1000000
 
@@ -51,8 +52,15 @@ void test1()
 //	std::cout << end - begin << "ms" << std::endl;
 //}
 
-int main()
-{
-	test1();
-	return 0;
-}
+
+//void f(wind::stack s)
+//{
+//	s.push(3);
+//}
+//
+//int main()
+//{
+//	wind::stack s;
+//	f(s);
+//	return 0;
+//}

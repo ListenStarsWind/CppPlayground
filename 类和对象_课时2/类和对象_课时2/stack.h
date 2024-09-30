@@ -11,6 +11,7 @@ namespace wind
 	public:
 		stack(size_t sz = 4, p_stack_data pArr = nullptr);
 		~stack();
+		stack(const stack& s);
 		void Ext();
 		void push(stack_data val);
 		bool IsEmpty();
