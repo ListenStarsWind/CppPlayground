@@ -31,14 +31,12 @@ wind::Date::Date(int year, int month, int day)
 {
     if ((month < 1 || month > 12) || (day < 1 || day > DayList(year, month)))
     {
-        std::cout << "错误：非法的初始化参数！" << std::endl;
+        std::cout << "Error: illegal initialization parameter!" << std::endl;
     }
-    else
-    {
+   
         _year = year;
         _month = month;
         _day = day;
-    }
 }
 
 wind::Date::Date(const Date& d)
@@ -61,58 +59,75 @@ int wind::DayList(int year, int month)
 
 wind::Date& wind::Date::operator=(const Date& d)
 {
-    _year = d._year;
-    _month = d._month;
-    _day = d._day;
+    if (this != &d)
+    {
+        _year = d._year;
+        _month = d._month;
+        _day = d._day;
+    }
     return *this;
 }
 
+//wind::Date wind::Date::operator+(int nu)const
+//{
+//    if (nu < 0)
+//    {
+//        return *this - (-nu);
+//    }
+//
+//    Date d = *this;
+//    d._day += nu;
+//    int day = DayList(d._year, d._month);
+//    while (d._day > day)
+//    {
+//        d._day -= day;
+//        d._month++;
+//
+//        if (d._month > 12)
+//        {
+//            d._month = 1;
+//            d._year++;
+//        }
+//        day = DayList(d._year, d._month);
+//    }
+//    return d;
+//}
+
 wind::Date wind::Date::operator+(int nu)const
 {
-    if (nu < 0)
-    {
-        return *this - (-nu);
-    }
-
     Date d = *this;
-    d._day += nu;
-    int day = DayList(d._year, d._month);
-    while (d._day > day)
-    {
-        d._day -= day;
-        d._month++;
-
-        if (d._month > 12)
-        {
-            d._month = 1;
-            d._year++;
-        }
-        day = DayList(d._year, d._month);
-    }
+    d += nu;
     return d;
 }
 
+//wind::Date wind::Date::operator-(int nu)const
+//{
+//    if (nu < 0)
+//    {
+//        return *this + (-nu);
+//    }
+//
+//    Date d = *this;
+//    d._day -= nu;
+//    int day = 0;
+//    while (d._day < 1)
+//    {
+//        d._month--;
+//        if (d._month < 1)
+//        {
+//            d._year--;
+//            d._month = 12;
+//        }
+//        day = DayList(d._year, d._month);
+//        d._day += day;
+//    }
+//    return d;
+//}
+
 wind::Date wind::Date::operator-(int nu)const
 {
-    if (nu < 0)
-    {
-        return *this + (-nu);
-    }
-
     Date d = *this;
-    d._day -= nu;
-    int day = 0;
-    while (d._day < 1)
-    {
-        d._month--;
-        if (d._month < 1)
-        {
-            d._year--;
-            d._month = 12;
-        }
-        day = DayList(d._year, d._month);
-        d._day += day;
-    }
+    d -= nu;
     return d;
 }
 
@@ -156,15 +171,62 @@ bool wind::Date::operator<(const Date& d)const
         return true;
 }
 
+//wind::Date& wind::Date::operator+=(int num)
+//{
+//    *this = *this + num;
+//    return *this;
+//}
+
 wind::Date& wind::Date::operator+=(int num)
 {
-    *this = *this + num;
+    if (num < 0)
+    {
+        return *this -= (-num);
+    }
+
+    _day += num;
+    int day = DayList(_year, _month);
+    while (_day > day)
+    {
+        _day -= day;
+        _month++;
+
+        if (_month > 12)
+        {
+            _year++;
+            _month = 1;
+        }
+        day = DayList(_year, _month);
+    }
     return *this;
 }
 
+//wind::Date& wind::Date::operator-=(int num)
+//{
+//    *this = *this - num;
+//    return *this;
+//}
+
 wind::Date& wind::Date::operator-=(int num)
 {
-    *this = *this - num;
+    if (num < 0)
+    {
+        return *this += (-num);
+    }
+
+    _day -= num;
+    int day = 0;
+    while (_day < 1)
+    {
+        _month--;
+        if (_month < 1)
+        {
+            _year--;
+            _month = 12;
+        }
+        day = DayList(_year, _month);
+        _day += day;
+    }
     return *this;
 }
 
@@ -208,7 +270,7 @@ int wind::Date::operator-(const Date& d)const
     int count = 0;
     while (min != max)
     {
-        min++;
+        ++min;
         count++;
     }
 

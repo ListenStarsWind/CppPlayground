@@ -1,6 +1,6 @@
 #include"Date.h"
 
-int main()
+void test4()
 {
 	const int year = wind::GetDate();
 	const int month = wind::GetDate();
@@ -40,10 +40,16 @@ int main()
 	d4.Print();
 
 	wind::Date d5(2023, 2, 29);
+	d5.Print();
 
 	d5 = d4;
 	d5 += -40;
 	std::cout << "对象d5的值为：";
 	d5.Print();
+}
+
+int main()
+{
+	test4();
 	return 0;
 }
