@@ -20,11 +20,15 @@ namespace wind
 
 	class Date
 	{
+		friend std::ostream& operator<<(std::ostream& out, const Date& d);
+		friend std::istream& operator>>(std::istream& in, Date& d);
 	public:
 		Date(int year = 1, int month = 1, int day = 1);
 		Date(const Date& d);
 		~Date();
 		Date& operator=(const Date& d);
+		Date* operator&();
+		const Date* operator&()const;
 		Date operator+(int num)const;
 		Date operator-(int num)const;
 		bool operator!=(const Date& d)const;

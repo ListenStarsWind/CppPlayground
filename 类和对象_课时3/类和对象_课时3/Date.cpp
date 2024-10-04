@@ -68,6 +68,16 @@ wind::Date& wind::Date::operator=(const Date& d)
     return *this;
 }
 
+wind::Date* wind::Date::operator&()
+{
+    return this;
+}
+
+const wind::Date* wind::Date::operator&()const
+{
+    return this;
+}
+
 //wind::Date wind::Date::operator+(int nu)const
 //{
 //    if (nu < 0)
@@ -280,4 +290,20 @@ int wind::Date::operator-(const Date& d)const
 void wind::Date::Print()const
 {
     std::cout << _year << "/" << _month << "/" << _day << std::endl;
+}
+
+std::ostream& wind::operator<<(std::ostream& out, const wind::Date& d)
+{
+    out << d._year << "/" << d._month <<"/" << d._day;
+    return out;
+}
+
+std::istream& wind::operator>>(std::istream& in, wind::Date& d)
+{
+    in >> d._year >> d._month >> d._day;
+    if ((d._month < 1 || d._month > 12) || (d._day < 1 || d._day > DayList(d._year, d._month)))
+    {
+        std::cout << "Error: illegal initialization parameter!" << std::endl;
+    }
+    return in;
 }

@@ -18,7 +18,7 @@ void test4()
 	{
 		std::cout << "d1更大" << std::endl;
 	}
-	else if(d1 == d2)
+	else if (d1 == d2)
 	{
 		std::cout << "d1和d2一样大" << std::endl;
 	}
@@ -48,8 +48,19 @@ void test4()
 	d5.Print();
 }
 
+void test6()
+{
+	const int year = wind::GetDate();
+	const int month = wind::GetDate();
+	const int day = wind::GetDate();
+	wind::Date d(year, month, day);
+	std::cout << d <<std::endl;
+	std::cin >> d;
+	std::cout << d << std::endl;;
+}
+
 int main()
 {
-	test4();
+	test6();
 	return 0;
 }

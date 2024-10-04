@@ -13,7 +13,7 @@ namespace wind
 		// When the data to be processed is stored in the dynamically allocated 
 		// memory block and the memory block is all valid data, you can directly 
 		// enter the pointer to the memory block, at this time, the number of 
-		// data parameter ‚Äúsz‚Äù must be accurate; otherwise, you can roughly 
+		// data parameter °∞sz°± must be accurate; otherwise, you can roughly 
 		// estimate the number of data to be processed as the first parameter, 
 		// and do not enter the second parameter.
 		Stack(size_t sz = 4, pSDate pArr = nullptr);
