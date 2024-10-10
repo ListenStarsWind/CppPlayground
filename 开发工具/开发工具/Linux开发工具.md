@@ -796,4 +796,86 @@ Change: 2024-10-05 20:09:12.668879304 +0800
 [wind@starry-sky gcc使用]$
 ```
 
+## git
+
+据说git也是由Linux之父**林纳斯·贝内迪克特·托瓦兹**创造的。Linux被开源之后，有不少计算机领域的顶级大佬都去完善Linux，所以有很大的代码版本控制需求，比如，这个大佬看到了什么Bug，顺手修了，发给以托瓦兹为主的Linux社区维护人员，然后托瓦兹就要把这份代码合并到原来的旧代码里，结果托瓦兹天天合并代码，于是祖师爷就想在市面上找找有没有版本管理的工具，一看，全都是付费的，开源的Linux怎么能用付费的渠道传播呢？此时有个以版本管理为盈利手段的公司听说了这个事，就把自家的付费工具免费提供给Linux社区，然后时间一久，Linux社区里的那些大佬，去反向破解这个付费工具，这个公司知道了这件事之后，非常生气，就把Linux社区的免费特权给回收了，然后Linux社区就和这个公司完全撕破脸了，没办法，祖师爷就自己用几周时间直接把git做出来了，然后把git也开源了，属实是为了Linux顺手写了一个git。
+
+git是一个开源工具，有些公司以git为基础，加了一些功能，开发了一些版本控制的网站，比如gitee，github之类。
+
+其它就不说了。下面以gitee为例，以纯命令行的方式介绍一下基本的用法。
+
+1. 账号注册，略过。
+
+2. 新建仓库
+
+   ![image-20241008194849235](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410081948367.png)
+
+   ![image-20241008200903529](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082009705.png)
+
+   ![image-20241008201234510](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082012694.png)
+
+3. 仓库克隆到本地
+
+   ![](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082017798.png)选择需要的协议，跟着走
+
+   ![image-20241008201812096](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082018149.png)
+
+   ```shell
+   [wind@starry-sky ~]$ ls
+   install.sh  projects  sour.txt  study
+   [wind@starry-sky ~]$ clear
+   [wind@starry-sky ~]$ git clone https://gitee.com/listen-to-the-wind-ruoyi/linux.git
+   Cloning into 'linux'...
+   remote: Enumerating objects: 5, done.
+   remote: Counting objects: 100% (5/5), done.
+   remote: Compressing objects: 100% (5/5), done.
+   remote: Total 5 (delta 0), reused 0 (delta 0), pack-reused 0
+   Unpacking objects: 100% (5/5), done.
+   [wind@starry-sky ~]$ ls
+   install.sh  linux  projects  sour.txt  study
+   [wind@starry-sky ~]$
+   ```
+
+   ```shell
+   [wind@starry-sky projects]$ 到你的项目文件夹下进行git初始化^C
+   [wind@starry-sky ~]$ cd projects
+   [wind@starry-sky projects]$ git init
+   Initialized empty Git repository in /home/wind/projects/.git/
+   ```
+
+   ```shell
+   [wind@starry-sky projects]$ 为git设置远程推送地址^C
+   [wind@starry-sky projects]$ git remote add origin <远程仓库地址>
+   -bash: syntax error near unexpected token `newline'
+   [wind@starry-sky projects]$ git remote add origin <你的远程仓库地址>^C
+   [wind@starry-sky projects]$ git remote add origin https://gitee.com/listen-to-the-wind-ruoyi/linux.git
+   ```
+
+   ```shell
+   [wind@starry-sky projects]$ 把项目文件夹下的新项目添加到git暂存区^C
+   [wind@starry-sky projects]$ git add .
+   [wind@starry-sky projects]$ 把暂存区的更改提交的本地仓库^C
+   [wind@starry-sky projects]$ ""里要简要描述一下提交的是什么^C
+   [wind@starry-sky projects]$ git commit -m "这是这个仓库的第一次提交，实验性质"
+   [master (root-commit) a88e6dc] 这是这个仓库的第一次提交，实验性质
+    13 files changed, 481 insertions(+)
+    create mode 100755 "Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214/bin/x64/Debug/Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214.out"
+    create mode 100644 "Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214/obj/x64/Debug/test.o"
+    create mode 100644 "Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214/test.c"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/ColourBlock.cpp"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/ColourBlock.h"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/ProgressBar.cpp"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/ProgressBar.h"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/ProgressBar.md"
+    create mode 100755 "\350\277\233\345\272\246\346\235\241/bin/x64/Debug/\350\277\233\345\272\246\346\235\241.out"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/obj/x64/Debug/ColourBlock.o"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/obj/x64/Debug/ProgressBar.o"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/obj/x64/Debug/test.o"
+    create mode 100644 "\350\277\233\345\272\246\346\235\241/test.cpp"
+   [wind@starry-sky projects]$ 描述一定不要乱写，等急着用的时候可以用来分辨内容^C
+   [wind@starry-sky projects]$ 接下来是把本地仓库中新更改的内容，推送到远端仓库^C
+   ```
+
+   
+
 # 完
