@@ -796,86 +796,880 @@ Change: 2024-10-05 20:09:12.668879304 +0800
 [wind@starry-sky gcc使用]$
 ```
 
-## git
+下面我们先写一份简单的代码，然后以此作为调试的基础。
 
-据说git也是由Linux之父**林纳斯·贝内迪克特·托瓦兹**创造的。Linux被开源之后，有不少计算机领域的顶级大佬都去完善Linux，所以有很大的代码版本控制需求，比如，这个大佬看到了什么Bug，顺手修了，发给以托瓦兹为主的Linux社区维护人员，然后托瓦兹就要把这份代码合并到原来的旧代码里，结果托瓦兹天天合并代码，于是祖师爷就想在市面上找找有没有版本管理的工具，一看，全都是付费的，开源的Linux怎么能用付费的渠道传播呢？此时有个以版本管理为盈利手段的公司听说了这个事，就把自家的付费工具免费提供给Linux社区，然后时间一久，Linux社区里的那些大佬，去反向破解这个付费工具，这个公司知道了这件事之后，非常生气，就把Linux社区的免费特权给回收了，然后Linux社区就和这个公司完全撕破脸了，没办法，祖师爷就自己用几周时间直接把git做出来了，然后把git也开源了，属实是为了Linux顺手写了一个git。
+```cpp
+#include<stdio.h>
 
-git是一个开源工具，有些公司以git为基础，加了一些功能，开发了一些版本控制的网站，比如gitee，github之类。
+int cumulative(int t)
+{
+	int ret = 0;
+	int cir = 1;
+	for (; cir <= t; cir++)
+	{
+		ret += cir;
+	}
+	return ret;
+}
 
-其它就不说了。下面以gitee为例，以纯命令行的方式介绍一下基本的用法。
+int main()
+{
+	printf("%s\n", "debug begin");
+	int top = 100;
+	int sum = cumulative(top);
+	printf("sum:%d",sum);
+	printf("%s\n","debug end");
+	return 0;
+}
+```
 
-1. 账号注册，略过。
+由于vim确实不太好用，这个项目我采用的是`VS远程连接+Xshell`的方案:
 
-2. 新建仓库
+![image-20241010210822150](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410102108094.png)
 
-   ![image-20241008194849235](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410081948367.png)
+```shell
+[wind@starry-sky projects]$ ls
+gdb调试实验  linux
+[wind@starry-sky projects]$ cd gdb调试实验
+[wind@starry-sky gdb调试实验]$ tree .
+.
+├── bin
+│   └── x64
+│       └── Debug
+│           └── gdb\350\260\203\350\257\225\345\256\236\351\252\214.out
+├── main.cpp
+└── obj
+    └── x64
+        └── Debug
+            └── main.o
 
-   ![image-20241008200903529](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082009705.png)
+6 directories, 3 files
+[wind@starry-sky gdb调试实验]$ cd ./bin/x64/Debug
+[wind@starry-sky Debug]$ ls
+gdb调试实验.out
+[wind@starry-sky Debug]$ readelf -S *.out | grep debug
+  [26] .debug_aranges    PROGBITS         0000000000000000  00001031
+  [27] .debug_info       PROGBITS         0000000000000000  00001061
+  [28] .debug_abbrev     PROGBITS         0000000000000000  00001189
+  [29] .debug_line       PROGBITS         0000000000000000  0000120f
+  [30] .debug_str        PROGBITS         0000000000000000  0000128c
+  [31] .debug_loc        PROGBITS         0000000000000000  00001406
+[wind@starry-sky Debug]$
+```
 
-   ![image-20241008201234510](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082012694.png)
+好的，确认是debug版本，下面进行调试。
 
-3. 仓库克隆到本地
+使用`gdb (debug版本的)name.out`即可进入调试，退出输入`q`或者`quit`。
 
-   ![](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082017798.png)选择需要的协议，跟着走
+```shell
+[wind@starry-sky Debug]$ ls
+gdb调试实验.out
+[wind@starry-sky Debug]$ gdb gdb调试实验.out
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-120.el7
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out...done.
+(gdb) quit
+[wind@starry-sky Debug]$
+```
 
-   ![image-20241008201812096](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410082018149.png)
+`list`指令可以显示部分代码：
 
-   ```shell
-   [wind@starry-sky ~]$ ls
-   install.sh  projects  sour.txt  study
-   [wind@starry-sky ~]$ clear
-   [wind@starry-sky ~]$ git clone https://gitee.com/listen-to-the-wind-ruoyi/linux.git
-   Cloning into 'linux'...
-   remote: Enumerating objects: 5, done.
-   remote: Counting objects: 100% (5/5), done.
-   remote: Compressing objects: 100% (5/5), done.
-   remote: Total 5 (delta 0), reused 0 (delta 0), pack-reused 0
-   Unpacking objects: 100% (5/5), done.
-   [wind@starry-sky ~]$ ls
-   install.sh  linux  projects  sour.txt  study
-   [wind@starry-sky ~]$
-   ```
+```shell
+[wind@starry-sky Debug]$ gdb gdb调试实验.out
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-120.el7
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out...done.
+(gdb) list
+7		for (; cir <= t; cir++)
+8		{
+9			ret += cir;
+10		}
+11		return ret;
+12	}
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+(gdb)
+```
 
-   ```shell
-   [wind@starry-sky projects]$ 到你的项目文件夹下进行git初始化^C
-   [wind@starry-sky ~]$ cd projects
-   [wind@starry-sky projects]$ git init
-   Initialized empty Git repository in /home/wind/projects/.git/
-   ```
+`l 行数`可以显示对应行及部分上下行。该指令会尝试把需要的行显示在中间。
 
-   ```shell
-   [wind@starry-sky projects]$ 为git设置远程推送地址^C
-   [wind@starry-sky projects]$ git remote add origin <远程仓库地址>
-   -bash: syntax error near unexpected token `newline'
-   [wind@starry-sky projects]$ git remote add origin <你的远程仓库地址>^C
-   [wind@starry-sky projects]$ git remote add origin https://gitee.com/listen-to-the-wind-ruoyi/linux.git
-   ```
+```shell
+(gdb) l 14
+9			ret += cir;
+10		}
+11		return ret;
+12	}
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+(gdb) l 0
+1	#include<stdio.h>
+2	
+3	int cumulative(int t)
+4	{
+5		int ret = 0;
+6		int cir = 1;
+7		for (; cir <= t; cir++)
+8		{
+9			ret += cir;
+10		}
+(gdb)
+```
 
-   ```shell
-   [wind@starry-sky projects]$ 把项目文件夹下的新项目添加到git暂存区^C
-   [wind@starry-sky projects]$ git add .
-   [wind@starry-sky projects]$ 把暂存区的更改提交的本地仓库^C
-   [wind@starry-sky projects]$ ""里要简要描述一下提交的是什么^C
-   [wind@starry-sky projects]$ git commit -m "这是这个仓库的第一次提交，实验性质"
-   [master (root-commit) a88e6dc] 这是这个仓库的第一次提交，实验性质
-    13 files changed, 481 insertions(+)
-    create mode 100755 "Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214/bin/x64/Debug/Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214.out"
-    create mode 100644 "Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214/obj/x64/Debug/test.o"
-    create mode 100644 "Linux\350\277\234\347\250\213\351\223\276\346\216\245\345\256\236\351\252\214/test.c"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/ColourBlock.cpp"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/ColourBlock.h"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/ProgressBar.cpp"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/ProgressBar.h"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/ProgressBar.md"
-    create mode 100755 "\350\277\233\345\272\246\346\235\241/bin/x64/Debug/\350\277\233\345\272\246\346\235\241.out"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/obj/x64/Debug/ColourBlock.o"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/obj/x64/Debug/ProgressBar.o"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/obj/x64/Debug/test.o"
-    create mode 100644 "\350\277\233\345\272\246\346\235\241/test.cpp"
-   [wind@starry-sky projects]$ 描述一定不要乱写，等急着用的时候可以用来分辨内容^C
-   [wind@starry-sky projects]$ 接下来是把本地仓库中新更改的内容，推送到远端仓库^C
-   ```
+`gdb`可以存储上一条指令，当什么都不输入就回车时，它会顺着逻辑走。比如现在已经显示了10行，再按一下回车会显示下面的10行。到末尾之后会提示。
 
-   
+```shell
+(gdb) 
+11		return ret;
+12	}
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d",sum);
+20		printf("%s\n","debug end");
+(gdb) 
+21		return 0;
+22	}(gdb)
+Line number 23 out of range; /home/wind/projects/gdb调试实验/main.cpp has 22 lines.
+(gdb)
+```
+
+`r`或`run`指令可以执行程序，类似VS里的`开始调试 - F5`。
+
+![image-20241010213353282](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410102133004.png)
+
+```shell
+(gdb) run
+Starting program: /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out 
+debug begin
+sum:5050debug end
+[Inferior 1 (process 32460) exited normally]
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.3.x86_64 libgcc-4.8.5-44.el7.x86_64
+(gdb)
+```
+
+`exited normally`：正常退出；由于没有断点，所以它提示`Missing separate debuginfos`：缺少单独的调试信息。
+
+`break`或者`b`指令可以打断点，后面接描述那行的信息，比如行号，函数名。`gdb`会依据断点设置的先后顺序为断点编号，之后我们都是通过编号指代某个断点。后接函数名时，会在函数的第一行代码上打断点。
+
+```shell
+(gdb) l 0
+1	#include<stdio.h>
+2	
+3	int cumulative(int t)
+4	{
+5		int ret = 0;
+6		int cir = 1;
+7		for (; cir <= t; cir++)
+8		{
+9			ret += cir;
+10		}
+(gdb) break cumulative
+Breakpoint 1 at 0x4005a4: file /home/wind/projects/gdb调试实验/main.cpp, line 5.
+(gdb) l 15
+10		}
+11		return ret;
+12	}
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d",sum);
+(gdb) break 18
+Breakpoint 2 at 0x4005e4: file /home/wind/projects/gdb调试实验/main.cpp, line 18.
+(gdb) l 22
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d",sum);
+20		printf("%s\n","debug end");
+21		return 0;
+22	}(gdb) break 20
+Breakpoint 3 at 0x400605: file /home/wind/projects/gdb调试实验/main.cpp, line 20.
+(gdb)
+```
+
+`info break`或`info b`可以查看断点信息。
+
+```shell
+(gdb) info break
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x00000000004005a4 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:5
+2       breakpoint     keep y   0x00000000004005e4 in main() at /home/wind/projects/gdb调试实验/main.cpp:18
+3       breakpoint     keep y   0x0000000000400605 in main() at /home/wind/projects/gdb调试实验/main.cpp:20
+(gdb)
+```
+
+`Num`就是断点的编号，`Enb`用来描述断点是否生效，当前的断点都是生效的，`Address`是代码的地址，用于描述断点位置，`What`则是用人能理解的方式描述断点位置。
+
+`delete`或者`d`指令可以删除断点，后接断点编号。
+
+```shell
+(gdb) delete 3
+(gdb) info b
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x00000000004005a4 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:5
+2       breakpoint     keep y   0x00000000004005e4 in main() at /home/wind/projects/gdb调试实验/main.cpp:18
+(gdb)
+```
+
+退出gdb，重新调试，断点信息会丢失。
+
+```shell
+(gdb) quit
+[wind@starry-sky Debug]$ gdb *.out
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-120.el7
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out...done.
+(gdb) info break
+No breakpoints or watchpoints.
+(gdb)
+```
+
+现在我们重新打断点
+
+```shell
+(gdb) l 0
+1	#include<stdio.h>
+2	
+3	int cumulative(int t)
+4	{
+5		int ret = 0;
+6		int cir = 1;
+7		for (; cir <= t; cir++)
+8		{
+9			ret += cir;
+10		}
+(gdb) 
+11		return ret;
+12	}
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d\n",sum);
+20		printf("%s\n","debug end");
+(gdb) 
+21		return 0;
+22	}(gdb) 
+Line number 23 out of range; /home/wind/projects/gdb调试实验/main.cpp has 22 lines.
+(gdb) 
+Line number 23 out of range; /home/wind/projects/gdb调试实验/main.cpp has 22 lines.
+(gdb) break cumulative
+Breakpoint 1 at 0x4005a4: file /home/wind/projects/gdb调试实验/main.cpp, line 5.
+(gdb) b 17
+Breakpoint 2 at 0x4005dd: file /home/wind/projects/gdb调试实验/main.cpp, line 17.
+(gdb) break 18
+Breakpoint 3 at 0x4005e4: file /home/wind/projects/gdb调试实验/main.cpp, line 18.
+(gdb) info break
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x00000000004005a4 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:5
+2       breakpoint     keep y   0x00000000004005dd in main() at /home/wind/projects/gdb调试实验/main.cpp:17
+3       breakpoint     keep y   0x00000000004005e4 in main() at /home/wind/projects/gdb调试实验/main.cpp:18
+(gdb)
+```
+
+此时`run`就能到达断点
+
+```shell
+(gdb) run
+Starting program: /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out 
+debug begin
+
+Breakpoint 2, main () at /home/wind/projects/gdb调试实验/main.cpp:17
+17		int top = 100;
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.3.x86_64 libgcc-4.8.5-44.el7.x86_64
+(gdb)
+```
+
+`n`或者`next`可以单条执行，不会进入被调用的具体函数，为了方便展示，我把第一个断点先禁止，`disable  `指令可以让断点失效，后接断点编号。
+
+```shell
+(gdb) disable 1
+(gdb) info break
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep n   0x00000000004005a4 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:5
+2       breakpoint     keep y   0x00000000004005dd in main() at /home/wind/projects/gdb调试实验/main.cpp:17
+	breakpoint already hit 1 time
+3       breakpoint     keep y   0x00000000004005e4 in main() at /home/wind/projects/gdb调试实验/main.cpp:18
+(gdb) next
+
+Breakpoint 3, main () at /home/wind/projects/gdb调试实验/main.cpp:18
+18		int sum = cumulative(top);
+(gdb) 
+19		printf("sum:%d\n",sum);
+(gdb)
+```
+
+`enable`是启用断点
+
+```shell
+(gdb) 
+sum:5050
+20		printf("%s\n","debug end");
+(gdb) 
+debug end
+21		return 0;
+(gdb) 
+22	}(gdb) 
+0x00007ffff7196555 in __libc_start_main () from /lib64/libc.so.6
+(gdb) 
+Single stepping until exit from function __libc_start_main,
+which has no line number information.
+[Inferior 1 (process 783) exited normally]
+(gdb) info break
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep n   0x00000000004005a4 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:5
+2       breakpoint     keep y   0x00000000004005dd in main() at /home/wind/projects/gdb调试实验/main.cpp:17
+	breakpoint already hit 1 time
+3       breakpoint     keep y   0x00000000004005e4 in main() at /home/wind/projects/gdb调试实验/main.cpp:18
+	breakpoint already hit 1 time
+(gdb) enable 1
+(gdb) disable 2
+(gdb) info break
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x00000000004005a4 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:5
+2       breakpoint     keep n   0x00000000004005dd in main() at /home/wind/projects/gdb调试实验/main.cpp:17
+	breakpoint already hit 1 time
+3       breakpoint     keep y   0x00000000004005e4 in main() at /home/wind/projects/gdb调试实验/main.cpp:18
+	breakpoint already hit 1 time
+(gdb) run
+Starting program: /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out 
+debug begin
+
+Breakpoint 3, main () at /home/wind/projects/gdb调试实验/main.cpp:18
+18		int sum = cumulative(top);
+(gdb)
+```
+
+`step  `或者`s`可以进入具体函数。
+
+```shell
+(gdb) step
+
+Breakpoint 1, cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:5
+5		int ret = 0;
+(gdb) 
+6		int cir = 1;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb)
+```
+
+`print`或者`p`指令可以临时打印变量的值。
+
+```shell
+(gdb) print ret
+$1 = 10
+(gdb) print cir
+$2 = 4
+(gdb) print top
+No symbol "top" in current context.
+(gdb) print t
+$3 = 100
+(gdb) print &ret
+$4 = (int *) 0x7fffffffe41c
+(gdb) print &cir
+$5 = (int *) 0x7fffffffe418
+(gdb) print &t
+$6 = (int *) 0x7fffffffe40c
+(gdb)
+```
+
+`print`只是临时打印变量而已，再进行`next`或者`step`不会再打印这些信息，若要每`next`或者`step`就让变量打印一下，需要用到`display`指令
+
+```shell
+(gdb) step
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) display cir
+1: cir = 9
+(gdb) display ret
+2: ret = 36
+(gdb) step
+7		for (; cir <= t; cir++)
+2: ret = 45
+1: cir = 9
+(gdb) 
+9			ret += cir;
+2: ret = 45
+1: cir = 10
+(gdb) 
+7		for (; cir <= t; cir++)
+2: ret = 55
+1: cir = 10
+(gdb) 
+9			ret += cir;
+2: ret = 55
+1: cir = 11
+(gdb) 
+7		for (; cir <= t; cir++)
+2: ret = 66
+1: cir = 11
+(gdb)
+```
+
+`undisplay`可以取消常监视，后面跟监视变量的编号，就是`2: ret = 55`前面的`2`。
+
+```shell
+(gdb) undisplay 2
+(gdb) step
+9			ret += cir;
+1: cir = 12
+(gdb) 
+7		for (; cir <= t; cir++)
+1: cir = 12
+(gdb) 
+9			ret += cir;
+1: cir = 13
+(gdb) 
+7		for (; cir <= t; cir++)
+1: cir = 13
+(gdb)
+```
+
+现在我们不想再走剩下的循环了，我想直接运行到返回值那里，此时就要用到`until`指令，`until 行号`指令可以让代码跑到对应行后停下。
+
+```shell
+(gdb) l 11
+6		int cir = 1;
+7		for (; cir <= t; cir++)
+8		{
+9			ret += cir;
+10		}
+11		return ret;
+12	}
+13	
+14	int main()
+15	{
+(gdb) until 11
+cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:11
+11		return ret;
+1: cir = 101
+(gdb) p ret
+$8 = 5050
+(gdb)
+```
+
+如果想直接跑完当前函数的剩余部分可以直接使用`finish`指令。不过它对`main`函数没用。
+
+```shell
+(gdb) undisplay 1
+(gdb) step
+12	}
+(gdb) 
+main () at /home/wind/projects/gdb调试实验/main.cpp:19
+19		printf("sum:%d\n",sum);
+(gdb) l 19
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d\n",sum);
+20		printf("%s\n","debug end");
+21		return 0;
+22	}(gdb)finish
+"finish" not meaningful in the outermost frame.
+(gdb) run
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out 
+debug begin
+
+Breakpoint 3, main () at /home/wind/projects/gdb调试实验/main.cpp:18
+18		int sum = cumulative(top);
+(gdb) l 18
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d\n",sum);
+20		printf("%s\n","debug end");
+21		return 0;
+22	}(gdb) step
+
+Breakpoint 1, cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:5
+5		int ret = 0;
+(gdb) step
+6		int cir = 1;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) finish
+Run till exit from #0  cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:7
+0x00000000004005ee in main () at /home/wind/projects/gdb调试实验/main.cpp:18
+18		int sum = cumulative(top);
+Value returned is $9 = 5050
+(gdb) step
+19		printf("sum:%d\n",sum);
+(gdb)
+```
+
+如果在某个区间内发现某个变量特别容易出错，可以使用 `set var` 指令直接修改该变量，以便回到区间的起始位置。例如，如果我们发现 `cumulative` 中的变量 `cir` 在从 85 到 86 的过程中容易出问题，可以在进入循环后将 `cir` 修改为 85。然而，我个人并不推荐直接修改变量值，因为这种错误可能是由前面的迭代累积影响所导致的。直接修改变量值而跳过中间的迭代过程可能会导致更复杂的问题。
+
+```shell
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 3038] will be killed.
+
+Quit anyway? (y or n) y
+[wind@starry-sky Debug]$ gdb *.out
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-120.el7
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out...done.
+(gdb) list 17
+12	}
+13	
+14	int main()
+15	{
+16		printf("%s\n", "debug begin");
+17		int top = 100;
+18		int sum = cumulative(top);
+19		printf("sum:%d\n",sum);
+20		printf("%s\n","debug end");
+21		return 0;
+(gdb) break 18
+Breakpoint 1 at 0x4005e4: file /home/wind/projects/gdb调试实验/main.cpp, line 18.
+(gdb) run
+Starting program: /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out 
+debug begin
+
+Breakpoint 1, main () at /home/wind/projects/gdb调试实验/main.cpp:18
+18		int sum = cumulative(top);
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.3.x86_64 libgcc-4.8.5-44.el7.x86_64
+(gdb) step
+cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:5
+5		int ret = 0;
+(gdb) 
+6		int cir = 1;
+(gdb) 
+7		for (; cir <= t; cir++)
+(gdb) 
+9			ret += cir;
+(gdb) display cir
+1: cir = 1
+(gdb) 
+(gdb) 
+(gdb) 
+(gdb) step
+7		for (; cir <= t; cir++)
+1: cir = 1
+(gdb) 
+9			ret += cir;
+1: cir = 2
+(gdb) 
+7		for (; cir <= t; cir++)
+1: cir = 2
+(gdb) 
+9			ret += cir;
+1: cir = 3
+(gdb) 
+7		for (; cir <= t; cir++)
+1: cir = 3
+(gdb) 
+9			ret += cir;
+1: cir = 4
+(gdb) 
+7		for (; cir <= t; cir++)
+1: cir = 4
+(gdb) 
+9			ret += cir;
+1: cir = 5
+(gdb) set var cir=85
+(gdb) step
+7		for (; cir <= t; cir++)
+1: cir = 85
+(gdb)
+```
+
+`breaktrace`或`bt`可以展现函数栈帧的调用结构，为了更好的展示，我们稍微改一下代码
+
+```cpp
+#include<stdio.h>
+
+void f3()
+{
+	printf("%s\n", "=");
+}
+
+void f2()
+{
+	printf("%s\n", "+");
+	f3();
+}
+
+void f1()
+{
+	printf("%s\n", "-");
+	f2();
+}
+
+int cumulative(int t)
+{
+	int ret = 0;
+	int cir = 1;
+	for (; cir <= t; cir++)
+	{
+		ret += cir;
+	}
+	f1();
+	return ret;
+}
+
+int main()
+{
+	printf("%s\n", "debug begin");
+	int top = 100;
+	int sum = cumulative(top);
+	printf("sum:%d\n",sum);
+	printf("%s\n","debug end");
+	return 0;
+}
+```
+
+```shell
+(gdb) list 0
+1	#include<stdio.h>
+2	
+3	void f3()
+4	{
+5		printf("%s\n", "=");
+6	}
+7	
+8	void f2()
+9	{
+10		printf("%s\n", "+");
+(gdb) 
+11		f3();
+12	}
+13	
+14	void f1()
+15	{
+16		printf("%s\n", "-");
+17		f2();
+18	}
+19	
+20	int cumulative(int t)
+(gdb) 
+21	{
+22		int ret = 0;
+23		int cir = 1;
+24		for (; cir <= t; cir++)
+25		{
+26			ret += cir;
+27		}
+28		f1();
+29		return ret;
+30	}
+(gdb) 
+31	
+32	int main()
+33	{
+34		printf("%s\n", "debug begin");
+35		int top = 100;
+36		int sum = cumulative(top);
+37		printf("sum:%d\n",sum);
+38		printf("%s\n","debug end");
+39		return 0;
+40	}(gdb) 
+Line number 41 out of range; /home/wind/projects/gdb调试实验/main.cpp has 40 lines.
+(gdb) break cumulative
+Breakpoint 1 at 0x4005e2: file /home/wind/projects/gdb调试实验/main.cpp, line 22.
+(gdb) break f1
+Breakpoint 2 at 0x4005c6: file /home/wind/projects/gdb调试实验/main.cpp, line 16.
+(gdb) break f2
+Breakpoint 3 at 0x4005b1: file /home/wind/projects/gdb调试实验/main.cpp, line 10.
+(gdb) break f3
+Breakpoint 4 at 0x4005a1: file /home/wind/projects/gdb调试实验/main.cpp, line 5.
+(gdb) info break
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x00000000004005e2 in cumulative(int) at /home/wind/projects/gdb调试实验/main.cpp:22
+2       breakpoint     keep y   0x00000000004005c6 in f1() at /home/wind/projects/gdb调试实验/main.cpp:16
+3       breakpoint     keep y   0x00000000004005b1 in f2() at /home/wind/projects/gdb调试实验/main.cpp:10
+4       breakpoint     keep y   0x00000000004005a1 in f3() at /home/wind/projects/gdb调试实验/main.cpp:5
+(gdb) run
+Starting program: /home/wind/projects/gdb调试实验/bin/x64/Debug/gdb调试实验.out 
+debug begin
+
+Breakpoint 1, cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:22
+22		int ret = 0;
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.3.x86_64 libgcc-4.8.5-44.el7.x86_64
+(gdb) bt
+#0  cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:22
+#1  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) 当前在cumulative栈帧，cumulative函数是由main调用的^CQuit
+(gdb) bt
+#0  cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:22
+#1  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) until 28
+cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:28
+28		f1();
+(gdb) step
+
+Breakpoint 2, f1 () at /home/wind/projects/gdb调试实验/main.cpp:16
+16		printf("%s\n", "-");
+(gdb) bt
+#0  f1 () at /home/wind/projects/gdb调试实验/main.cpp:16
+#1  0x0000000000400609 in cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:28
+#2  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) 当前在f1函数栈帧中，它是被cumulative调用的^CQuit
+(gdb) step
+-
+17		f2();
+(gdb) 
+
+Breakpoint 3, f2 () at /home/wind/projects/gdb调试实验/main.cpp:10
+10		printf("%s\n", "+");
+(gdb) bt
+#0  f2 () at /home/wind/projects/gdb调试实验/main.cpp:10
+#1  0x00000000004005d5 in f1 () at /home/wind/projects/gdb调试实验/main.cpp:17
+#2  0x0000000000400609 in cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:28
+#3  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) 当前在f2栈帧中，它是由f1调用的^CQuit
+(gdb) step
++
+11		f3();
+(gdb) 
+
+Breakpoint 4, f3 () at /home/wind/projects/gdb调试实验/main.cpp:5
+5		printf("%s\n", "=");
+(gdb) bt
+#0  f3 () at /home/wind/projects/gdb调试实验/main.cpp:5
+#1  0x00000000004005c0 in f2 () at /home/wind/projects/gdb调试实验/main.cpp:11
+#2  0x00000000004005d5 in f1 () at /home/wind/projects/gdb调试实验/main.cpp:17
+#3  0x0000000000400609 in cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:28
+#4  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) step
+=
+6	}
+(gdb) 
+f2 () at /home/wind/projects/gdb调试实验/main.cpp:12
+12	}
+(gdb) bt
+#0  f2 () at /home/wind/projects/gdb调试实验/main.cpp:12
+#1  0x00000000004005d5 in f1 () at /home/wind/projects/gdb调试实验/main.cpp:17
+#2  0x0000000000400609 in cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:28
+#3  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) step
+f1 () at /home/wind/projects/gdb调试实验/main.cpp:18
+18	}
+(gdb) step
+cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:29
+29		return ret;
+(gdb) bt
+#0  cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:29
+#1  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb) finish
+Run till exit from #0  cumulative (t=100) at /home/wind/projects/gdb调试实验/main.cpp:29
+0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+36		int sum = cumulative(top);
+Value returned is $1 = 5050
+(gdb) bt
+#0  0x0000000000400631 in main () at /home/wind/projects/gdb调试实验/main.cpp:36
+(gdb)
+```
+
+简要总结：
+
+- list／l 行号：显示binFile源代码，接着上次的位置往下列，每次列10行。  
+- list／l 函数名：列出某个函数的源代码。  
+- r或run：运行程序。  
+- n 或 next：单条执行。  
+- s或step：进入函数调用  
+- break(b) 行号：在某一行设置断点  
+- break 函数名：在某个函数开头设置断点  
+- info break ：查看断点信息。  
+- finish：执行到当前函数返回，然后停下来等待命令  
+- print(p)：打印表达式的值，通过表达式可以修改变量的值或者调用函数  
+- p 变量：打印变量值。  
+- set var：修改变量的值  
+- continue(或c)：从当前位置开始连续而非单步执行程序  
+- run(或r)：从开始连续而非单步执行程序  
+- delete breakpoints：删除所有断点  
+- delete breakpoints n：删除序号为n的断点   
+- disable breakpoints：禁用断点  
+- enable breakpoints：启用断点  
+- info(或i) breakpoints：参看当前设置了哪些断点  
+- display 变量名：跟踪查看一个变量，每次停下来都显示它的值  
+- undisplay：取消对先前设置的那些变量的跟踪  
+- until X行号：跳至X行  
+- breaktrace(或bt)：查看各级函数调用及参数  
+- info（i) locals：查看当前栈帧局部变量的值  
+- quit：退出gdb  
+
+最后：gdb命令行调试实在不太好用，会基本用法即可，反正我用VS调试。
 
 # 完
