@@ -38,6 +38,14 @@ void test1()
 	Swap(m, n);
 }
 
+//void test2()
+//{
+//
+//	double i = add<double>(6, 1.25);
+//	int j = add(6, (int)1.25);
+//	std::cout << i << std::endl;
+//	std::cout << j << std::endl;
+//}
 
 //void test2()
 //{
@@ -45,17 +53,26 @@ void test1()
 //	wind::Stack<double> j;
 //}
 
+int add(const int& val1, const int& val2)
+{
+	std::cout << "int" << std::endl;
+	return val1 + val2;
+}
+
 template<class T>
 T add(const T& val1, const T& val2)
 {
+	std::cout << "template" << std::endl;
 	return val1 + val2;
 }
 
 int main()
 {
-	double i = add<double>(6, 1.25);
-	int j = add(6,(int)1.25);
+	auto i = add(1, 5);
 	std::cout << i << std::endl;
+	// 若是非要使用模版生成的函数也不是不行
+	// 显式实例化即可
+	auto j = add<int>(1, 5);
 	std::cout << j << std::endl;
 	return 0;
 }
