@@ -4,7 +4,7 @@
 
 虽然我们刚从STL简介中过来，但需要注意的是，`string` 并不是 STL 的一部分。`string` 类在 STL之前就已诞生，由 C++ 标准委员会编写。从 STL 的角度来看，`string` 应归类于容器部分，因为它是用于承载字符和字符串的数据结构。然而，由于 `string` 的风格与 STL 非常相似，因此在正式学习 STL 之前，我们先来学习 `string` 类。
 
-## [STL的文档主界面](https://legacy.cplusplus.com/reference/string/string/)
+## [string的文档主界面](https://legacy.cplusplus.com/reference/string/string/)
 
 ![image-20241012090353846](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410120903961.png)
 
@@ -115,7 +115,7 @@
 
 - operator+：重载`+`，返回一个新的字符串，`Concatenate strings (function )`
 - relational operators：关系运算符重载，例如`>=`,`==`,`<=`等，`Relational operators for string (function )`
-- swap：真 - 内容交换函数，`Exchanges the values of two strings (function )`
+- swap：并非swap模版的实例化，实际是复用成员swap`Exchanges the values of two strings (function )`
 - operator>>：流提取重载函数，`Extract string from stream (function )`
 - operator<<：流插入重载函数，`Insert string into stream (function )`
 - getline：从标准输入流中读取整行数据，`Get line from stream into string (function )`
@@ -261,5 +261,533 @@ C++11后，又添加了`cbegin  cend   crbegin  crend`，它们没重载版本�
 在构造函数里，提供了一个实例化方案，可以用字符串的一部分实例化出另一个字符串
 
 `string (const string& str, size_t pos, size_t len = npos);`根据文档描述，我们知道，这一部分是从`pos`开始，从`len`结束的，当`len`比`obj.size()`还大时，只会取到`obj.size()`这一位。而`len`有个缺省值`npos`，所以不写第三个参数实际上就会把剩下的部分全都取用。
+
+### 容量
+
+```cpp
+void test4()
+{
+	std::string s;
+	std::cout << "initial capacity:";
+	size_t old = s.capacity();
+	std::cout << old << std::endl;
+	int cir = 0;
+	for (; cir < 100; cir++)
+	{
+		s.push_back('c');
+		size_t n = s.capacity();
+		if (n != old)
+		{
+			std::cout << "trigger expansion,The new capacity is:";
+			std::cout << n << std::endl;
+			old = n;
+		}
+	}
+}
+
+int main()
+{
+	test4();
+	return 0;
+}
+```
+
+VS2022的运行结果为：
+
+![image-20241014133109574](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141331751.png)
+
+g++的运行结果是：
+
+```shell
+[wind@starry-sky SGI版本string]$ ls
+main.cpp  makefile  out
+[wind@starry-sky SGI版本string]$ ./out
+initial capacity:0
+trigger expansion,The new capacity is:1
+trigger expansion,The new capacity is:2
+trigger expansion,The new capacity is:4
+trigger expansion,The new capacity is:8
+trigger expansion,The new capacity is:16
+trigger expansion,The new capacity is:32
+trigger expansion,The new capacity is:64
+trigger expansion,The new capacity is:128
+[wind@starry-sky SGI版本string]$
+```
+
+我们看到SGI版本的string是很规规矩矩地二倍扩容的，P.J.版本的string就有自己的一套，C++标准没有规定扩容机制，所以各个编译器厂商有自己的逻辑。除此之外，我们还可以看出，最起码SGI版本的容量参数是不包括`\0`的，最开始的容量就是0，它的容量参数就是可容纳有效字符的个数。
+
+---------------------------
+
+让我们来看看`reserve`，为了避免多次扩容而导致的效率低下，可以先预估字符串的大小，一次性提前开辟。
+
+```cpp
+void test4()
+{
+	std::string s;
+	s.reserve(100);
+	std::cout << "initial capacity:";
+	size_t old = s.capacity();
+	std::cout << old << std::endl;
+	int cir = 0;
+	for (; cir < 100; cir++)
+	{
+		s.push_back('c');
+		size_t n = s.capacity();
+		if (n != old)
+		{
+			std::cout << "trigger expansion,The new capacity is:";
+			std::cout << n << std::endl;
+			old = n;
+		}
+	}
+}
+
+int main()
+{
+	test4();
+	return 0;
+}
+```
+
+![image-20241014141338203](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141413311.png)
+
+我们可以看到，微软还是有自己的逻辑，它可能出于内存对齐的考虑，不是直接扩容到100的，而是比100多。
+
+g++还是一如既往的规整：
+
+```shell
+[wind@starry-sky SGI版本string]$ vim main.cpp
+[wind@starry-sky SGI版本string]$ make
+[wind@starry-sky SGI版本string]$ ./out
+initial capacity:100
+[wind@starry-sky SGI版本string]$
+```
+
+`reserve`能不能缩容呢？文档的描述是："In all other cases, it is taken as a non-binding request to shrink the string capacity: the container implementation is free to optimize otherwise and leave the string with a capacity greater than *n*."
+
+“non-binding request”（非约束性请求）是什么意思，它的意思是对于缩小容量的请求（也就是参数设置地比现在容量小），系统可以出于自己的策略灵活响应，这个请求不具有强制性。
+
+对于上文的其它情况，也就是缩小字符串的容量，将被视为一种非约束请求：容器的具体实现可以出于优化的考虑，自由地做出其它选择，使得字符串的容量依旧比参数n大。
+
+```cpp
+void test4()
+{
+	std::string s;
+	s.reserve(100);
+	std::cout << "initial capacity:";
+	size_t old = s.capacity();
+	std::cout << old << std::endl;
+	int cir = 0;
+	for (; cir < 100; cir++)
+	{
+		s.push_back('c');
+		size_t n = s.capacity();
+		if (n != old)
+		{
+			std::cout << "trigger expansion,The new capacity is:";
+			std::cout << n << std::endl;
+			old = n;
+		}
+	}
+	s.reserve(10);
+	std::cout << "Current capacity:" << s.capacity() << std::endl;
+}
+```
+
+![image-20241014144657536](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141446640.png)
+
+我们看到，VS直接无视了请求。
+
+---------------
+
+`resize`可以调整当前字符串的长度
+
+```cpp
+void resize (size_t n);
+void resize (size_t n, char c);
+```
+
+如果参数`n`小于当前字符串的长度，字符串的当前值将被缩短到前n个有效字符，也就是说，超出n的字符将被删除。
+
+如果参数`n`大于当前字符串的长度，就会通过在当前内容的尾部插入一定数目字符的方式，把字符串的长度扩展到`n`；如果指定了参数`c`，就会把新增加的字符初始化为`c`，如果没有指定，新增加的字符就会被初始化为空字符，也就是`\0`。
+
+```cpp
+void test5()
+{
+	std::string s("hello world");
+	std::cout << "Current capacity:" << s.capacity() << std::endl;
+	std::cout << "Current size:" << s.size() << std::endl;
+	s.resize(s.capacity());
+	std::cout << "Current capacity:" << s.capacity() << std::endl;
+	std::cout << "Current size:" << s.size() << std::endl;
+}
+```
+
+![image-20241014151801601](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141518423.png)
+
+![image-20241014151833674](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141518452.png)
+
+![image-20241014151901361](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141519537.png)
+
+![image-20241014152114545](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141521250.png)
+
+接下来是删除
+
+![image-20241014152352323](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141523107.png)
+
+### 元素访问
+
+`at`和`operator[]`对于越界的处理。
+
+`operator[]`的越界逻辑：
+
+![image-20241014154334129](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141543268.png)
+
+未定义的行为，也不知道会发生什么。
+
+`at`的越界逻辑：
+
+![image-20241014154612100](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141546258.png)
+
+如果越界，会抛出异常。
+
+### 追加
+
+`append`比`operator+=`多了一些功能：
+
+![image-20241014155201886](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141552045.png)
+
+`operator+=`的参数可以是其他对象，另一个字符串，字符。
+
+![image-20241014155358942](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141553101.png)
+
+`append`多了追加部分字符串的功能。
+
+`push_back`只能追加字符。
+
+除此之外，还有一个类外函数`operator+`，很明显，为了不改变对象，它需要多次拷贝构造，所以效率可以预料到比较低。
+
+### 赋值
+
+`assign`和`operator=`都有赋值功能。
+
+![image-20241014160546177](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141605356.png)
+
+![image-20241014160628414](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141606577.png)
+
+可以看到`assign`比`operator=`稍微多一点功能，主要是选取部分内容赋值的。
+
+### 插入
+
+![image-20241014160858733](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141608885.png)
+
+头插，使用下标或者迭代器
+
+```cpp
+void test6()
+{
+	std::string s("hello world");
+	s.insert(0, 1, 'x');
+	std::cout << s << std::endl;
+	s.insert(s.begin(), 'x');
+	std::cout << s << std::endl;
+}
+```
+
+![image-20241014161608900](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141616987.png)
+
+使用下标指定时，还必须再加一个参数，用来表示插入次。
+
+### 删除
+
+![image-20241014162242962](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141622123.png)
+
+可以指定下标位置连续删除，也可以用迭代器单个删除。由于使用下标索引位置的重载函数有缺省值，所以不提供参数就会把字符串全删除。
+
+### 替换
+
+![image-20241014162647001](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141626174.png)
+
+一般来说，`replace`有三个主要的参数，用于指示替换起始位置的索引，用于描述被替换字符的数目，用于描述替换的内容。
+
+```cpp
+void test7()
+{
+	std::string s1("hello world");
+	// 把空格【下标为5】的那一个字符替换成%?
+	s1.replace(5, 1, "%?");
+	std::cout << s1 << std::endl;
+	// 此时很明显有数据挪动
+	// 如果第二个参数就是第三个参数的有效字符个数
+	// 那就只是单纯平替，没有挪动数据
+	std::string s2("hello world");
+	s2.replace(5, 2, "%x");
+	std::cout << s2 << std::endl;
+}
+```
+
+![image-20241014164133303](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141641407.png)
+
+### 交换
+
+如果要把某句话中的特定字符替换成其它字符串，该怎么做呢？
+
+```cpp
+// 替换空格
+std::string& test8(std::string& s, const char* c)
+{
+	auto p = new std::string;
+	p->reserve(s.size());
+	for (auto ch : s)
+	{
+		if (ch != ' ')
+		{
+			p->operator+=(ch);
+		}
+		else
+		{
+			p->operator+=(c);
+		}
+	}
+	return *p;
+}
+
+int main()
+{
+	std::string s("The quick brown fox jumps over a lazy dog.");
+	auto r = test8(s, "%#@");
+	std::cout << r << std::endl;
+	return 0;
+}
+```
+
+![image-20241014170404304](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141704369.png)
+
+但这样写有些多余，而且容易内存泄漏，能不能直接返回对象本身呢？
+
+```cpp
+// 替换空格
+std::string& test8(std::string& s, const char* c)
+{
+	std::string r;
+	r.reserve(s.size());
+	for (auto ch : s)
+	{
+		if (ch != ' ')
+		{
+			r += ch;
+		}
+		else
+		{
+			r += c;
+		}
+	}
+	swap(r, s);
+	return s;
+}
+
+int main()
+{
+	std::string s("The quick brown fox jumps over a lazy dog.");
+	auto r = test8(s, "%#@");
+	std::cout << r << std::endl;
+	std::cout << s << std::endl;
+	return 0;
+}
+```
+
+![image-20241014170950310](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141709424.png)
+
+这里的`swap`可就有讲究了。
+
+我们知道，在C++中，有个通用交换模版。
+
+![image-20241014171353084](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141713273.png)
+
+光就这模版来说，swap要深拷贝，所以对于容器来说，这种交换往往会非常低效。
+
+那我们上面调的是这个`swap`吗？我们看看模版`swap`的说明：
+
+![image-20241014171827908](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141718078.png)
+
+第一段话说明了模版`swap`非常不适合容器的交换。第二段则说，对于所有特定的容器，`swap`都已经特定化地实现了，使得它们只交换少量指针，而不是真正地交换内容。
+
+我们看到`string`文档里，有两个`swap`，一个是成员函数，另一个是非成员函数，它们都不是实际内容的交换。而之前我们也说过，对于已经实现的函数，编译器不会再实例化出一个模版函数，所以我们上面调的就是`string`文档里的非成员函数`swap`，而不是由`swap`通用模版实例化出的模版函数。
+
+![image-20241014173220038](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141732204.png)
+
+```cpp
+void test9()
+{
+	std::string s1("hello worldtyuggvghgvvhvbghg");
+	std::string s2("hello linuxhgvvhyubgjhbjhkjij");
+	std::cout << &s1 << std::endl;
+	std::cout << &s2 << std::endl;
+	printf("%p\n", s1.c_str());
+	printf("%p\n", s2.c_str());
+	std::cout << "================" << std::endl;
+	s1.swap(s2);
+	std::cout << &s1 << std::endl;
+	std::cout << &s2 << std::endl;
+	printf("%p\n", s1.c_str());
+	printf("%p\n", s2.c_str());
+}
+```
+
+![image-20241017081426134](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410170814321.png)
+
+注意，VS的某些较高版本对交换逻辑进行了特殊优化。实际上，VS会动态分析深拷贝交换和索引交换的优劣，当字符串长度较短时，深拷贝交换代价将小于索引交换代价，此时VS会进行真正的值交换。比如下面的代码：
+
+```cpp
+void test9()
+{
+	std::string s1("hello world");
+	std::string s2("hello linux");
+	std::cout << &s1 << std::endl;
+	std::cout << &s2 << std::endl;
+	printf("%p\n", s1.c_str());
+	printf("%p\n", s2.c_str());
+	std::cout << "================" << std::endl;
+	s1.swap(s2);
+	std::cout << &s1 << std::endl;
+	std::cout << &s2 << std::endl;
+	printf("%p\n", s1.c_str());
+	printf("%p\n", s2.c_str());
+}
+```
+
+![image-20241017081833884](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410170818003.png)
+
+### 查找
+
+![image-20241014175418328](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141754564.png)
+
+查找文件后缀
+
+```cpp
+void test10()
+{
+	std::string s("main.cpp");
+	size_t i = s.find('.');
+	auto j = s.substr(i);
+	std::cout << j << std::endl;
+}
+```
+
+![image-20241014180318988](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141803118.png)
+
+不过这样写还不行，因为有些文件名不止一个点。
+
+```shell
+[wind@starry-sky ~]$ sudo ls /root
+[sudo] password for wind: 
+one  wind_backup.tar.gz
+[wind@starry-sky ~]$
+```
+
+`wind_backup.tar.gz`是我这个账号的备份，因为不久之前，我这个账号不知道怎么回事，有些配置出问题了，然后就注销了这个用户，现在这个是新创建了，于是就把这个新账号整个备份了一个。
+
+`.tar`是打包，`.gz`是压缩，真正的后缀是`.gz`，这时，就要用`rfind`了，它是倒着找的，不是从前往后找的。
+
+![image-20241014181502306](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141815141.png)
+
+网址分类：协议，域名，资源名。比如`https://cplusplus.com/reference/string/string/find/`，其中`https`是协议，`cplusplus.com`是域名，`reference/string/string/find/`是资源名。
+
+```cpp
+void test11()
+{
+	std::string s("https://cplusplus.com/reference/string/string/find/");
+	size_t n = s.find(':');
+	if (n != std::string::npos)
+	{
+		auto i = s.substr(0, n);
+		std::cout << i << std::endl;
+	}
+	else
+	{
+		std::cout << "URL error!" << std::endl;
+	}
+	// 第二个参数规定了查找的起始位置，缺省值为0
+	size_t m = s.find('/', n + 3);
+	if (m != std::string::npos)
+	{
+		auto j = s.substr(n + 3, m - (n + 3));
+		std::cout << j << std::endl;
+	}
+	else
+	{
+		std::cout << "URL error!" << std::endl;
+	}
+	n = s.find('/', m + 1);
+	if (n != std::string::npos)
+	{
+		auto k = s.substr(m + 1);
+		std::cout << k << std::endl;
+	}
+	else
+	{
+		std::cout << "URL error!" << std::endl;
+	}
+}
+```
+
+![image-20241014193442128](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141934278.png)
+
+------------------
+
+`find_first_of`和`find_last_of`
+
+这是文档给的示例代码：
+
+```cpp
+#include <cstddef>  
+void test12()
+{
+	
+	std::string str("Please, replace the vowels in this sentence by asterisks.");
+	std::size_t found = str.find_first_of("aeiou");
+	while (found != std::string::npos)
+	{
+		str[found] = '*';
+		found = str.find_first_of("aeiou", found + 1);
+	}
+	std::cout << str << '\n';
+}
+```
+
+![image-20241014194528323](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141945451.png)
+
+它找的不是第一个参数那个字符串，而是第一个参数里出现的所有字符，可以指定查找的起始位置。
+
+`find_first_of`是从前往后找，`find_last_of`是从后往前找。
+
+`not`是找补集，找没有出现在第一个参数的
+
+![image-20241014200619394](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142006014.png)
+
+### getline
+
+为了对多个对象进行流提取，C++在默认情况下会把输入的信息以空格或者换行作为分隔符。
+
+![image-20241014205544600](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142055254.png)
+
+在上述的代码中，我们输入了"hello world"，编译器将这两个单词间的空格视为了分隔符，于是`s`只提取到了`hello`，而`world`仍旧处于缓冲区中。
+
+这对多个对象的流提取无疑是有益的，但若是想把包括空格的一句话提取到一个对象中，这种机制就有问题了。
+
+![image-20241014205911517](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142059444.png)
+
+为此，我们有了`getline`，`getline`有两个版本：
+
+```cpp
+istream& getline (istream& is, string& str, char delim);
+istream& getline (istream& is, string& str);
+```
+
+第一个版本中的第三个参数`delim`描述了遇到什么字符才会停止提取，第二个版本则会把整行内容全部提取。
+
+![image-20241014210659512](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142107482.png)
+
+
 
 # 完
