@@ -273,8 +273,15 @@ void test14()
 	std::cout << s2 << std::endl;
 }
 
+void test15()
+{
+	std::string s1("abcdef");
+	std::string s2("abcdgh");
+	std::cout << (s1 < s2) << std::endl;
+}
+
 int main()
 {
-	test9();
+	test15();
 	return 0;
 }
