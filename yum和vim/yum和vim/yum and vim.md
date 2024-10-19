@@ -573,6 +573,46 @@ code.c  f.txt
 
 ![image-20240929212128498](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409292121644.png)
 
+vim的批量化操作方式是命令模式下输入`ctrl v`，然后使用方向键`一定要用 j  k 方向键 `选中区域，接下来按`i`进行操作，比如这里我批量化注释。这是后补的，界面可能有所区别。
+
+命令模式：
+
+![image-20241019154315414](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191543530.png)
+
+`ctrl v`：
+
+![image-20241019154421373](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191544466.png)
+
+用`j`选中几行：
+
+![image-20241019154506415](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191545507.png)
+
+输入`I`进入插入模式：
+
+![image-20241019154716288](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191547425.png)
+
+输入注释符`//`：
+
+![image-20241019154931284](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191549413.png)
+
+按下`esc`：
+
+![image-20241019155016337](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191550462.png)
+
+取消块注释：
+
+`ctrl v`：
+
+![image-20241019155220372](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191552521.png)
+
+使用`j`选中区域：
+
+![image-20241019155257924](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191552051.png)
+
+按下`d`：
+
+![image-20241019155412745](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410191554879.png)
+
 ### vim配置
 
 上面我们用的是原装vim，什么都没有，其实vim可以自己配置，最起码给我来个语法提示，自动缩进什么的。
