@@ -62,7 +62,7 @@
 - size：返回容器中有效元素的个数，`Return length of string (public member function )`
 - length：返回字符串中的有效字符个数，和`size`功能实际相同，这是由于`string`写在`STL`之前，后续为了适配`STL`的风格，又写了`size`。`Return length of string (public member function )`
 - max_size：用于返回当前平台理论上能开辟的最大的空间，不考虑当前平台的内存情况，因此饱受诟病，`Return maximum size of string (public member function )`
-- resize：用于根据需要调整容量的大小，`Resize string (public member function )`
+- resize：用于根据需要调整成员的大小，`Resize string (public member function )`
 - capacity：返回当前开辟的空间大小，`Return size of allocated storage (public member function )`
 - reserve：用于提前扩展容量的大小，避免频繁扩展降低效率，`Request a change in capacity (public member function )`
 - clear：用于清空容量中的成员，以承接其它成员，`Clear string (public member function )`

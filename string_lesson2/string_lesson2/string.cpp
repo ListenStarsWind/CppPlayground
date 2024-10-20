@@ -361,22 +361,258 @@ std::istream& wind::operator>>(std::istream& in, string& s)
 	//}
 
 	
+	/*
 	char ch;
 	ch = in.get();
 	while (ch != ' ' && ch != '\n')
 	{
 		s += ch;
 	}
+	这种写法虽然可行
+	但扩容频繁效率较低
+	*/
+
+	// 字符缓冲区
+	char buff[16];
+	int curr = 0;
+	char tmp;
+	do
+	{
+		// 字符先存储入缓冲区
+		tmp = in.get();
+		buff[curr++] = tmp;
+
+		// 当缓冲区满后
+		// 一次性存入
+		if (curr == 15)
+		{
+			buff[curr] = '\0';
+			curr = 0;
+			s += buff;
+		}
+	}while (tmp != ' ' && tmp != '\n');
+
+	// 跳出循环，说明上一个位是
+	// 终止位，将其改为'\0'
+	buff[curr - 1] = '\0';
+	s += buff;
+
 	return in;
 }
 
-wind::string& wind::get(std::istream& in, string& s, char delim)
+wind::string& wind::string::get(char delim, std::istream& in)
 {
+	char buff[16];
+	int curr = 0;
+	char tmp;
+	do
+	{
+		tmp = in.get();
+		buff[curr++] = tmp;
 
+		if (curr == 15)
+		{
+			buff[curr] = '\0';
+			curr = 0;
+			*this += buff;
+		}
+	} while (tmp != delim);
+
+	buff[curr - 1] = '\0';
+	*this += buff;
+
+	return *this;
 }
+
+//wind::string& wind::get(std::istream& in, string& s, char delim)
+//{
+//	char buff[16];
+//	int curr = 0;
+//	char tmp;
+//	do
+//	{
+//		tmp = in.get();
+//		buff[curr++] = tmp;
+//
+//		if (curr == 15)
+//		{
+//			buff[curr] = '\0';
+//			curr = 0;
+//			s += buff;
+//		}
+//	} while (tmp != delim);
+//
+//	buff[curr - 1] = '\0';
+//	s += buff;
+//
+//	return s;
+//}
 
 void wind::string::clear()
 {
 	_str[0] = '\0';
 	_size = 0;
+}
+
+wind::string& wind::string::erase(size_t pos, size_t len)
+{
+	// 位置检查
+	assert(pos < _size);
+	// begin和end控制挪动的起始
+	// 默认len不会超出有效区域
+	size_t begin = pos + len;
+
+	// len已经超出有效区域
+	// 数据需要进行修正
+	if (len == npos || pos + len >= _size)
+	{
+		// 修正起始位置
+		begin = _size;
+		// 修正丢弃字符个数
+		len = begin - pos;
+	}
+
+	// end就是原终止位
+	size_t end = _size;
+	// 调整有效字符个数
+	_size = _size - len;
+	// 挪动未丢弃字符部分
+	while (begin < end)
+	{
+		_str[pos++] = _str[begin++];
+	}
+	// 添加终止位
+	_str[pos] = '\0';
+	return *this;
+}
+
+void wind::string::resize(size_t len, char holder)
+{
+	// 保证空间足够
+	reserve(len);
+	// 设置填充起始位置
+	size_t begin = _size;
+	// 修正有效字符个数
+	_size = len;
+	// 末尾添加终止符
+	_str[_size] = '\0';
+
+	// 填充开始
+	while (begin < _size)
+	{
+		_str[begin++] = holder;
+	}
+}
+
+size_t wind::string::find(const char ch, size_t pos)const
+{
+	assert(pos < _size);
+	size_t goal = npos;
+	size_t begin;
+	for(begin = pos; begin < _size; begin++)
+	{
+		if(_str[begin] == ch)
+		{
+			goal = begin;
+			break;
+		}
+	}
+	return goal;
+}
+
+size_t wind::string::find(const char* str, size_t pos)const
+{
+	assert(pos < _size);
+	size_t goal = npos;
+	const char* p = strstr(_str + pos, str);
+	if (p)
+	{
+		goal = (size_t)(p - _str);
+	}
+	return goal;
+}
+
+size_t wind::string::find(const wind::string& s, size_t pos)const
+{
+	assert(pos < _size);
+	return find(_str, pos);
+}
+
+void wind::string::swap(string& s)
+{
+	std::swap(_str, s._str);
+	std::swap(_size, s._size);
+	std::swap(_capacity, s._capacity);
+}
+
+//// 古典主义写法
+//wind::string::string(const string& s)
+//	:_str(new char[s._capacity + 1])
+//	, _size(s._size)
+//	, _capacity(s._capacity)
+//{
+//	strcpy(_str, s._str);
+//}
+
+// 现代主义写法
+wind::string::string(const string& s)
+	:_str(nullptr)
+	, _size(0)
+	, _capacity(0)
+{
+	string tmp(s._str);
+
+	// this->swap(tmp);
+	// 省略this->也行
+	swap(tmp);
+}
+
+//// 古典主义写法
+//wind::string& wind::string::operator=(const wind::string& s)
+//{
+//	// 防止自我赋值
+//	if (this != &s)
+//	{
+//		// 为了避免空闲空间太大或不够
+//		// 直接销毁被赋值对象
+//		delete _str[];
+//		_str = new char[s._capacity + 1];
+//		_size = s._size;
+//		_capacity = s._capacity;
+//		strcpy(_str, s._str);
+//	}
+//	return *this;
+//}
+
+//// 现代主义写法
+//wind::string& wind::string::operator=(const wind::string& s)
+//{
+//	if (this != &s)
+//	{
+//		string tmp(s._str);
+//		swap(tmp);
+//	}
+//	return *this;
+//}
+
+// 后现代主义写法
+wind::string& wind::string::operator=(wind::string s)
+{
+	swap(s);
+	return *this;
+}
+
+wind::string wind::string::substr(size_t pos, size_t len)const
+{
+	assert(pos < _size);
+	string tmp;
+	if (len == npos || pos + len >= _size)
+	{
+		len = _size - pos;
+	}
+	tmp.reserve(len);
+	tmp._size = len;
+	tmp._str[len] = '\0';
+	strncpy(tmp._str, _str + pos, len);
+	return tmp;
 }

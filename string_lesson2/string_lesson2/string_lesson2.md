@@ -510,8 +510,101 @@ bool wind::operator<(const char* str, const string& s)
 
 ### IO
 
-```cpp
+在C++中，为了对多个对象进行流提取，会像C那样，把'\0'和'\n'默认为间隔符而不被读取，此时就要用`istream`的成员函数`get`，`get`会返回不加处理的原字符，同时，也支持指定某个字符为间隔符，获得一个字符串。
 
+```cpp
+std::ostream& wind::operator<<(std::ostream& out, const string& s)
+{
+	for (auto ch : s)
+	{
+		out << ch;
+	}
+	return out;
+}
+
+std::istream& wind::operator>>(std::istream& in, string& s)
+{
+	s.clear();
+	// 为了区分多个对象的流提取
+	// C++或者C默认以空格和换行为分隔符
+	// 但这也为包含空格字符串的提取
+	// 造成了困难，istream中的成员
+	// 函数get可以自定义分隔符
+
+
+	//// 空格和换行会被默认为分隔符
+	//// 所以不会被提取
+	//// 这会使得程序进入死循环
+	//char ch;
+	//in >> ch;
+	//while (ch != ' ' && ch != '\n')
+	//{
+	//	s += ch;
+	//}
+
+	
+	/*
+	char ch;
+	ch = in.get();
+	while (ch != ' ' && ch != '\n')
+	{
+		s += ch;
+	}
+	这种写法虽然可行
+	但扩容频繁效率较低
+	*/
+
+	// 字符缓冲区
+	char buff[16];
+	int curr = 0;
+	char tmp;
+	do
+	{
+		// 字符先存储入缓冲区
+		tmp = in.get();
+		buff[curr++] = tmp;
+
+		// 当缓冲区满后
+		// 一次性存入
+		if (curr == 15)
+		{
+			buff[curr] = '\0';
+			curr = 0;
+			s += buff;
+		}
+	}while (tmp != ' ' && tmp != '\n');
+
+	// 跳出循环，说明上一个位是
+	// 终止位，将其改为'\0'
+	buff[curr - 1] = '\0';
+	s += buff;
+
+	return in;
+}
+
+wind::string& wind::string::get(char delim, std::istream& in)
+{
+	char buff[16];
+	int curr = 0;
+	char tmp;
+	do
+	{
+		tmp = in.get();
+		buff[curr++] = tmp;
+
+		if (curr == 15)
+		{
+			buff[curr] = '\0';
+			curr = 0;
+			*this += buff;
+		}
+	} while (tmp != delim);
+
+	buff[curr - 1] = '\0';
+	*this += buff;
+
+	return *this;
+}
 ```
 
 ![image-20241018132134218](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410181321367.png)
@@ -531,12 +624,301 @@ int main()
 
 ![image-20241018132034411](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410181320680.png)
 
-
-
 ### erase
 
+```cpp
+wind::string& wind::string::erase(size_t pos, size_t len)
+{
+	// 位置检查
+	assert(pos < _size);
+	// begin和end控制挪动的起始
+	// 默认len不会超出有效区域
+	size_t begin = pos + len;
 
+	// len已经超出有效区域
+	// 数据需要进行修正
+	if (len == npos || pos + len >= _size)
+	{
+		// 修正起始位置
+		begin = _size;
+		// 修正丢弃字符个数
+		len = begin - pos;
+	}
 
+	// end就是原终止位
+	size_t end = _size;
+	// 调整有效字符个数
+	_size = _size - len;
+	// 挪动未丢弃字符部分
+	while (begin < end)
+	{
+		_str[pos++] = _str[begin++];
+	}
+	// 添加终止位
+	_str[pos] = '\0';
+	return *this;
+}
+```
 
+### resize
+
+```cpp
+void wind::string::resize(size_t len, char holder)
+{
+	// 保证空间足够
+	reserve(len);
+	// 设置填充起始位置
+	size_t begin = _size;
+	// 修正有效字符个数
+	_size = len;
+	// 末尾添加终止符
+	_str[_size] = '\0';
+
+	// 填充开始
+	while (begin < _size)
+	{
+		_str[begin++] = holder;
+	}
+}
+```
+
+### find
+
+```cpp
+size_t wind::string::find(const char ch, size_t pos)const
+{
+	assert(pos < _size);
+	size_t goal = npos;
+	size_t begin;
+	for(begin = pos; begin < _size; begin++)
+	{
+		if(_str[begin] == ch)
+		{
+			goal = begin;
+			break;
+		}
+	}
+	return goal;
+}
+
+size_t wind::string::find(const char* str, size_t pos)const
+{
+	assert(pos < _size);
+	size_t goal = npos;
+	const char* p = strstr(_str + pos, str);
+	if (p)
+	{
+		goal = (size_t)(p - _str);
+	}
+	return goal;
+}
+
+size_t wind::string::find(const wind::string& s, size_t pos)const
+{
+	assert(pos < _size);
+	return find(_str, pos);
+}
+```
+
+### swap
+
+```cpp
+void wind::string::swap(string& s)
+{
+	std::swap(_str, s._str);
+	std::swap(_size, s._size);
+	std::swap(_capacity, s._capacity);
+}
+```
+
+### string
+
+```cpp
+//// 古典主义写法
+//wind::string::string(const string& s)
+//	:_str(new char[s._capacity + 1])
+//	, _size(s._size)
+//	, _capacity(s._capacity)
+//{
+//	strcpy(_str, s._str);
+//}
+
+// 现代主义写法
+wind::string::string(const string& s)
+	:_str(nullptr)
+	, _size(0)
+	, _capacity(0)
+{
+	string tmp(s._str);
+
+	// this->swap(tmp);
+	// 省略this->也行
+	swap(tmp);
+}
+```
+
+古典的写法就是按照标准老老实实地去写，现代的写法则先构造一个满足要求的临时对象，然后交换一下。
+
+### operator=
+
+```cpp
+//// 古典主义写法
+//wind::string& wind::string::operator=(const wind::string& s)
+//{
+//	// 防止自我赋值
+//	if (this != &s)
+//	{
+//		// 为了避免空闲空间太大或不够
+//		// 直接销毁被赋值对象
+//		delete _str[];
+//		_str = new char[s._capacity + 1];
+//		_size = s._size;
+//		_capacity = s._capacity;
+//		strcpy(_str, s._str);
+//	}
+//	return *this;
+//}
+
+//// 现代主义写法
+//wind::string& wind::string::operator=(const wind::string& s)
+//{
+//	if (this != &s)
+//	{
+//		string tmp(s._str);
+//		swap(tmp);
+//	}
+//	return *this;
+//}
+
+// 后现代主义写法
+wind::string& wind::string::operator=(wind::string s)
+{
+	swap(s);
+	return *this;
+}
+```
+
+把以前的数据交换给临时对象，随临时对象的析构而析构。——把需要的从临时对象那夺过来，把不需要的扔给临时对象。
+
+### substr
+
+```cpp
+wind::string wind::string::substr(size_t pos, size_t len)const
+{
+	assert(pos < _size);
+	string tmp;
+	if (len == npos || pos + len >= _size)
+	{
+		len = _size - pos;
+	}
+	tmp.reserve(len);
+	tmp._size = len;
+	tmp._str[len] = '\0';
+	strncpy(tmp._str, _str + pos, len);
+	return tmp;
+}
+```
+
+## P.J.版本string组织形式
+
+先来看一份代码：
+
+```cpp
+void test5()
+{
+	std::cout <<"std::string->" << sizeof(std::string)<<std::endl;
+	std::cout <<"wind::string->" << sizeof(wind::string)<<std::endl;
+}
+```
+
+`x64`环境下是
+
+![image-20241020183721106](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410201837627.png)
+
+在`x64`环境下，`size_t`是`unsigned long long`，它是八个字节的大小，`char*`是地址，也有八个字节，所以`sizeof(wind::string)`是24字节。
+
+```cpp
+private:
+	char* _str;
+	size_t _size;
+	size_t _capacity;
+	const static size_t npos;
+```
+
+在`x86`下，`size_t`是`unsigned int`，所以结果是12
+
+![image-20241020183638609](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410201836361.png)
+
+我们发现不管是`x86`还是`x64`，标准库里的大小都比我们自己的多`16`字节，这`16`字节是什么呢？
+
+微软给`string`对象又加了一个16字节的静态数组，当有效字符个数小于16时，这些数据就会被存放在这个静态数组里，而当有效字符个数等于或者超过16之后，这个静态数组就会被完全弃用，而改用再`new`处空间的方式存储字符串。
+
+微软这样做的原因是为了防止内存碎片的出现，当进行多次动态开辟之后，内存块间的空间就很难被利用，从而造成内存利用率低，又考虑到字符串一般都不是太长，所以微软直接为对象增了一个静态数组成员，就固定的16字节，微软的`string`大概长这个样子：
+
+```cpp
+char _buff[16];
+char* _str;
+size_t _size;
+size_t _capacity;
+```
+
+![image-20241020185342122](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410201853765.png)
+
+![image-20241020185508750](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410201855810.png)
+
+![image-20241020185541659](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410201855722.png)
+
+## SGI版本string组织形式
+
+```shell
+[wind@starry-sky ~]$ vim test.cpp
+[wind@starry-sky ~]$ cat test.cpp
+#include<string>
+#include<iostream>
+
+int main()
+{
+  std::cout <<"std::string->" << sizeof(std::string)<<std::endl;
+  return 0; 
+}
+[wind@starry-sky ~]$ g++ test.cpp -o out
+[wind@starry-sky ~]$ ./out
+std::string->8
+[wind@starry-sky ~]$
+```
+
+它`8`个字节。先说明一下，现在的`g++`默认`x64`。
+
+这`8`个字节其实就是一个指针的大小，这个指针会指向一处空间，而这处空间里才存储着诸如`_size  _capacity _str`等信息。SGI的`string`从另一个角度提高效率，它使用了延迟拷贝的策略，我们上面写的拷贝构造和VS的大致相同，都是直接进行深拷贝，SGI不这样干，当发生拷贝时，它不会立刻进行深拷贝，而是把拷贝对象的指针赋给被构造对象，让这两个对象共用一处空间，而当这被构造对象要对空间写数据时，才进行深拷贝，让两个对象各用各的。
+
+这处空间还存储着一个数据，这个数据用来描述现在有多少个对象同时使用这处空间，析构时，只对这个数据减一，而当数据为0时，才会`delete`。这个数据被称为“引用计数”。
+
+```shell
+[wind@starry-sky ~]$ vim test.cpp
+[wind@starry-sky ~]$ cat test.cpp
+#include<iostream>
+#include<string>
+
+int main()
+{
+  std::string s1("hello world");
+  std::string s2(s1);
+  std::cout<<(void*)s1.c_str()<<std::endl;
+  std::cout<<(void*)s2.c_str()<<std::endl;
+  s2[0]++;
+  std::cout<<(void*)s1.c_str()<<std::endl;
+  std::cout<<(void*)s2.c_str()<<std::endl;
+  return 0;
+}
+[wind@starry-sky ~]$ g++ test.cpp -o out
+[wind@starry-sky ~]$ ./out
+0x1f0bc38
+0x1f0bc38
+0x1f0bc38
+0x1f0bc68
+[wind@starry-sky ~]$
+```
+
+就像进程的写时拷贝。
 
 # 完
