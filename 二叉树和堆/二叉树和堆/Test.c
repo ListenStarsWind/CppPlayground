@@ -139,6 +139,6 @@ void test8()
 
 int main()
 {
-	test8();
+	test4();
 	return 0;
 }

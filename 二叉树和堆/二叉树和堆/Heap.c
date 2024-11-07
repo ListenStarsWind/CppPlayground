@@ -60,7 +60,7 @@ static int total(int val)
 {
 	double exponent = (double)val;
 	double x = exp2(exponent);
-	return (int)x;
+	return (int)(x-1);
 }
 
 static void HeapDilatation(pHeap pH)
