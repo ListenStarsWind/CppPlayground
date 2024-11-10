@@ -1,15 +1,12 @@
 #pragma once
 
+#include"version_control.h"
 #include<assert.h>
 #include<algorithm>
+#include"reverse_iterator.h"
 
 namespace wind {
 
-	// C++一般不用内部类
-	// 所以采取先外部定义模版
-	// 再typedef的策略
-	// 为了方便别的类访问成员
-	// 直接使用struct，全公有
 	template<class T>
 	struct __list_node_base {
 		T _val;
@@ -22,100 +19,6 @@ namespace wind {
 			, _next(nullptr)
 		{}
 	};
-
-	//template<class T>
-	//struct __list_iterator_base {
-	//	typedef __list_node_base<T> node;
-	//	node* _ptr;
-	//	__list_iterator_base(node* ptr)
-	//		:_ptr(ptr)
-	//	{}
-
-	//	__list_iterator_base(const __list_iterator_base& obj)
-	//		:_ptr(obj._ptr)
-	//	{}
-
-	//	// 迭代器的成员是内置类型
-	//	// 不用析构
-
-	//	__list_iterator_base& operator++()
-	//	{
-	//		_ptr = _ptr->_next;
-	//		return *this;
-	//	}
-
-	//	__list_iterator_base& operator++(int)
-	//	{
-	//		__list_iterator_base ret = *this;
-	//		_ptr = _ptr->_next;
-	//		return ret;
-	//	}
-
-	//	__list_iterator_base& operator--()
-	//	{
-	//		_ptr = _ptr->_prev;
-	//		return *this;
-	//	}
-
-	//	__list_iterator_base& operator--(int)
-	//	{
-	//		__list_iterator_base ret = *this;
-	//		_ptr = _ptr->_prev;
-	//		return ret;
-	//	}
-
-	//	// 迭代器就像指针一样。
-	//	// 对于内置数据类型，可以直接用*ptr来获取值。
-	//	T& operator*() const
-	//	{
-	//		return _ptr->_val;
-	//	}
-
-	//	// 对于自定义类型来说，
-	//	// 用(*ptr).member会显得有点繁琐，
-	//	// 所以我们可以用ptr->member的方式来简化。
-
-	//	// 既然迭代器模仿指针，
-	//	// 自然也需要重载iterator->member的操作。
-
-	//	// 不过这里是个模板，
-	//	// 我们并不知道T是什么自定义类型，
-	//	// 也不知道它有哪些成员以及这些成员的类型。
-	//	// 所以不能直接用T->member的方式。
-
-	//	// 那么，当我们重载迭代器的->操作时，
-	//	// 怎么获取成员呢？
-
-	//	// C++为此做了特别处理：
-	//	// 在重载->操作时，只需返回T的指针。
-	//	// 然后编译器会根据这个指针来找到对应的成员。
-
-	//	// 比如，如果T是一个结构体 {int a; int b}; 
-	//	// 当有人写iterator->a时，
-	//	// 编译器会将其理解为T*->a。
-	//	// 这个T*是从->重载中获取的。
-
-	//	T* operator->()const
-	//	{
-	//		return &(_ptr->_val);
-	//	}
-
-	//	bool operator!=(const __list_iterator_base& obj)const
-	//	{
-	//		if (_ptr != obj._ptr)
-	//			return true;
-	//		else
-	//			return false;
-	//	}
-
-	//	bool operator==(const __list_iterator_base& obj)const
-	//	{
-	//		if (*this != obj)
-	//			return true;
-	//		else
-	//			return false;
-	//	}
-	//};
 
 	template<class T, class ref, class ptr>
 	struct __list_iterator_base {
@@ -188,8 +91,15 @@ namespace wind {
 	template<class T>
 	class list {
 		typedef __list_node_base<T> node;
-		// 构造函数都要生成头结点
-		// 所以干脆直接写成具体函数
+
+		typedef T value_type;
+		typedef T& reference;
+		typedef T* pointer;
+
+		typedef const T& const_reference;
+		typedef const T* const_pointer;
+
+		
 		node* __init_head_node()
 		{
 			node* head = new node();
@@ -199,9 +109,11 @@ namespace wind {
 			return head;
 		}
 	public:
-		// 迭代器要被外部使用，因而放在公共域
-		typedef __list_iterator_base<T, T&, T*> iterator;
-		typedef __list_iterator_base<T, const T&, const T*> const_iterator;
+		typedef __list_iterator_base<value_type, reference, pointer> iterator;
+		typedef __list_iterator_base<value_type, const_reference, const_pointer> const_iterator;
+
+		typedef __reverse_iterator<iterator, reference, pointer> reverse_iterator;
+		typedef __reverse_iterator<const_iterator, const_reference, const_pointer> const_reverse_iterator;
 
 		list()
 			:_head(__init_head_node())
@@ -219,15 +131,8 @@ namespace wind {
 			_size++;
 		}
 
-		// 第一次写昏头了
-		// 顺手在后面加了个
-		// const
-		// 这样的话iterator
-		// 就会被识别成const_lterator或iterator
-		// 也就是说常对象也会往这里走
 		iterator begin()
 		{
-			// 隐式类型转换
 			return _head->_next;
 		}
 
@@ -236,24 +141,63 @@ namespace wind {
 			return _head;
 		}
 
-		/*bool empty()
-		{
-			if (begin() == end())
-				return true;
-			else
-				return false;
-		}*/
-
 		const_iterator begin()const
 		{
 			return _head->_next;
 		}
 
-
 		const_iterator end()const
 		{
 			return _head;
 		}
+
+#ifdef USING_SGI_STYLE
+
+		reverse_iterator rbegin()
+		{
+			return reverse_iterator(end());
+		}
+
+		reverse_iterator rend()
+		{	
+			return reverse_iterator(begin());
+		}
+
+		const_reverse_iterator rbegin()const
+		{
+			return const_reverse_iterator(end());
+		}
+
+		const_reverse_iterator rend()const
+		{
+			return const_reverse_iterator(begin());
+		}
+
+#else
+
+		reverse_iterator rbegin()
+		{
+			iterator it = end();
+			return reverse_iterator(--it);
+		}
+
+		reverse_iterator rend()
+		{
+			return reverse_iterator(end());
+		}
+
+		const_reverse_iterator rbegin()const
+		{
+			const_iterator it = end();
+			return const_reverse_iterator(--it);
+		}
+
+		const_reverse_iterator rend()const
+		{
+			return const_reverse_iterator(end());
+		}
+
+#endif
 
 		bool empty()const
 		{
@@ -263,11 +207,6 @@ namespace wind {
 				return false;
 		}
 
-		/*size_t size()
-		{
-			return _size;
-		}*/
-
 		size_t size()const
 		{
 			return _size;
@@ -275,7 +214,6 @@ namespace wind {
 
 		iterator insert(iterator pos, const T& val)
 		{
-			// iterator全公开直接访问
 			node* curr = pos._ptr;
 			node* prev = curr->_prev;
 			node* newNode = new node(val);
@@ -297,7 +235,6 @@ namespace wind {
 			next->_prev = prev;
 			delete curr;
 			_size--;
-			// 修正外部失效迭代器
 			return next;
 		}
 
@@ -321,8 +258,6 @@ namespace wind {
 			list::iterator it = begin();
 			while (it != end())
 			{
-				// 连着删除，迭代器失效
-				// 使用返回值修正迭代器
 				it = erase(it);
 			}
 		}
@@ -333,20 +268,16 @@ namespace wind {
 			delete _head;
 		}
 
-		// 理论上应该用const list& l
-		// 但还没写const_iterator 
 		list(const list& l)
 			:_head(__init_head_node())
 			, _size(0)
 		{
-			// 常引用提升效率
 			for (const auto& e : l)
 			{
 				push_back(e);
 			}
 		}
 
-		// 与拷贝构造同理，暂时用list& l
 		list& operator=(const list& l)
 		{
 			if (this != &l)
@@ -365,11 +296,6 @@ namespace wind {
 			std::swap(_head, l._head);
 			std::swap(_size, l._size);
 		}
-
-		/*list& operator=(list l)
-		{
-			swap(*this, l);
-		}*/
 
 	private:
 		node* _head;

@@ -574,9 +574,9 @@ struct __list_iterator_base {
 	bool operator==(const __list_iterator_base& obj)const
 	{
 		if (*this != obj)
-			return true;
-		else
 			return false;
+		else
+			return true;
 	}
 };
 ```
@@ -624,7 +624,7 @@ iterator insert(iterator pos, const T& val)
 
 iterator erase(iterator pos)
 {
-	assert(empty());
+	assert(!empty());
 	node* curr = pos._ptr;
 	node* prev = curr->_prev;
 	node* next = curr->_next;
