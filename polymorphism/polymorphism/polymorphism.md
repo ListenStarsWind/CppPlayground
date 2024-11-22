@@ -470,7 +470,7 @@ namespace concept
 
 ![image-20241118204055206](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411182040259.png)
 
-`mov         eax,dword ptr [p]`就是从`p`的起始地址开始读四个字节，然后把这四个字节写到`eax`寄存器中，所以`eax`里现在存的就是那个虚函数表指针
+`mov         eax,dword ptr [p]`就是把`p`的起始地址开始读四个字节，然后把这四个字节写到`eax`寄存器中，所以`eax`里现在存的就是那个虚函数表指针
 
 `mov         edx,dword ptr [eax]`就是从`eax`里存的地址为开始，把四个字节，也就是`BuyTicket()`的函数指针存到`edx`里
 
@@ -563,6 +563,8 @@ namespace concept
 `function`我就不说了，`BuyTicKet`可以略微说一下，`Student`对`Person`中的该函数进行了重写，所以，`Student`中的虚表中的函数指针发生了改变，然后`C`没有重写该函数，所以自然不改变。
 
 至于`destrutor`，要特别强调一下，被`virtual`修饰的成员函数一定是虚函数，但这不意味着不被`virtual`修饰的成员函数就一定不是虚函数。比如在这里，尽管`Student`中的`destrutor`并没有被`virtual`修饰，但它也是虚函数，其指针被收录入虚表中，既然它已经被收录到虚表中，而`C`又有默认构造，所以还是完成了重写，并且此时`C`的默认构造也成为了虚函数，被收录到虚表中。
+
+或者可以这样理解，凡是参与重写过程的函数，不过是被重写的，还是重写的，都会成为虚函数。
 
 -----------------
 
