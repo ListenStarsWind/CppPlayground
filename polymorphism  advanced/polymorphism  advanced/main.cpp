@@ -220,8 +220,6 @@ namespace Vft_in_Vi
 		D d;
 	}
 }
-// At:0x005fbea0 
-// Ðéº¯Êý±í A:0x005fbea0 B:0x005fbe88 C:0x005fbe94 D:
 
 class task {
 	typedef void(*function)();
