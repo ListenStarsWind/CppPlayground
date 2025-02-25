@@ -83,7 +83,7 @@ struct ListNode* detectCycle(struct ListNode* head) {
         fast = fast->next->next;
         if (fast == slow) {
             meet = fast;
-            break;
+            break; 
         }
     }
     if (meet == NULL) {
