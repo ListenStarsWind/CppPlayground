@@ -546,14 +546,14 @@ using namespace std;
 //	return 0;
 //}
 
-#include"myList.h"
-
-int main()
-{
-	wind::list<pair<wind::string, int>> lt;
-	cout << endl;
-	lt.push_back(make_pair("1111", 1));
-	cout << endl;
-	lt.emplace_back("3333", 3);
-	return 0;
-}
+//#include"myList.h"
+//
+//int main()
+//{
+//	wind::list<pair<wind::string, int>> lt;
+//	cout << endl;
+//	lt.push_back(make_pair("1111", 1));
+//	cout << endl;
+//	lt.emplace_back("3333", 3);
+//	return 0;
+//}
