@@ -1,4 +1,5 @@
 #include<iostream>
+#include<mutex>
 using namespace std;
 
 //class HeapOnly
@@ -116,7 +117,11 @@ public:
 	{
 		if (_inst == nullptr)
 		{
-			_inst = new B;
+			unique_lock<mutex> mtx(_mtx);
+			if (_inst == nullptr)
+			{
+				_inst = new B;
+			}
 		}
 		return _inst;
 	}
@@ -138,6 +143,7 @@ public:
 private:
 	int m = 0;
 	static B* _inst;
+	static std::mutex _mtx;
 	
 	struct gc
 	{
@@ -154,18 +160,45 @@ private:
 B* B::_inst = nullptr;
 B::gc B::_gc;
 
-int main()
-{
-	B& b = *B::getInstance();
-	cout << b.getM() << endl;
+//int main()
+//{
+//	B& b = *B::getInstance();
+//	cout << b.getM() << endl;
+//
+//	b.delInstance();
+//
+//	return 0;
+//}
 
-	b.delInstance();
-
-	return 0;
-}
 
 //int main()
 //{
 //	cout << A::getInstance().getN() << endl;
 //	return 0;
 //}
+
+
+class C
+{
+public:
+	static C& getInstance()
+	{
+		static C inst;
+		return inst;
+	}
+private:
+	C()
+	{
+		cout << "C()" << endl;
+	}
+
+	C(const C& that) = delete;
+	C& operator=(const C& that) = delete;
+};
+
+int main()
+{
+	cout << "==============" << endl;
+	auto& singleton = C::getInstance();
+	return 0;
+}

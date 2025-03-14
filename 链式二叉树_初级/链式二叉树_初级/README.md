@@ -683,7 +683,7 @@ int BTHeight(pBTNode pRoot)
 这也简单，比如说，求一个数第K层的节点数，那就等于左子树第K-1层的节点数再加上右子树第K-1层节点数，那什么时候停止呢？那就是K==1的时候，K==1的时候就来到了要计数的层，除此之外，还要提防树没到K的时候就已经空了。
 
 ````c
-nt BTLevelKSize(pBTNode pRoot, int k)
+int BTLevelKSize(pBTNode pRoot, int k)
 {
 	if (pRoot == NULL)
 		return 0;

@@ -3,6 +3,8 @@
 #include<exception>
 #include<iostream>
 #include<utility>
+#include<thread>
+#include<mutex>
 #include"SmartPtr.h"
 #include"unique_ptr.h"
 #include"shared_ptr.h"
@@ -88,8 +90,43 @@ void shared_ptr_test3()
 	wind::shared_ptr<FILE> f(fopen("shared_ptr.h", "r"), [](FILE* _ptr) {fclose(_ptr); });
 }
 
+void shared_ptr_test4()
+{
+	mutex mtx__;
+	wind::shared_ptr<double> r(new double(1.25));
+	thread t1(
+		[&]() {
+			for (size_t i = 0; i < 100000; ++i)
+			{
+				wind::shared_ptr<double> copy(r);
+
+				unique_lock<mutex> mtx(mtx__);
+				++*r;
+			}
+		}
+	);
+
+	thread t2(
+		[&]() {
+			for (size_t i = 0; i < 100000; ++i)
+			{
+				wind::shared_ptr<double> copy(r);
+
+				unique_lock<mutex> mtx(mtx__);
+				++*r;
+			}
+		}
+	);
+
+	t1.join();
+	t2.join();
+
+	cout << r.use_count() << endl;
+	cout << *r.get() << endl;
+}
+
 int main()
 {
-	shared_ptr_test2();
+	shared_ptr_test4();
 	return 0;
 }

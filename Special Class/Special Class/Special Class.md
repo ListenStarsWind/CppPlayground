@@ -401,4 +401,39 @@ B::gc B::_gc;
 
 ```
 
+## multi-threading
+
+单例模式的线程安全在Linux层已经结束, 在此不做赘述.
+
+我们在这里再说一下懒汉模式的最简单版本. 一键实例, 无需加锁. 
+
+```cpp
+class C
+{
+public:
+	static C& getInstance()
+	{
+		static C inst;
+		return inst;
+	}
+private:
+	C()
+	{
+		cout << "C()" << endl;
+	}
+
+	C(const C& that) = delete;
+	C& operator=(const C& that) = delete;
+};
+
+int main()
+{
+	cout << "==============" << endl;
+	auto& singleton = C::getInstance();
+	return 0;
+}
+```
+
+我们使用局部静态对象实现单例模型, 因为它在静态区所以程序退出时会自动析构, 并且, 局部静态对象只在第一次调用初始化, 所以也是单的.   另外, 需要注意的是, 局部静态对象初始化在C++11之前不线程安全, 所以C++11之前不能这样写, 但在C++11之后, 局部静态对象的初始化就是线程安全的, 所以就可以这样写了. 
+
 # end

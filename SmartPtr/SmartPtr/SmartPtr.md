@@ -702,4 +702,41 @@ C++11则不是这样, C++11提供了一种"自定义删除器"极值, 这个自�
 
 ![image-20250305214355542](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/20250305214355614.png)
 
+## multi-threading
+
+现在我们回来对智能指针进行一下线程安全保证. 
+
+我们之前写的`shared_ptr`, 中有一个引用计数, 当面临多线程环境下, 没有被保护的引用计数很明显会出现问题. 
+
+```cpp
+void shared_ptr_test4()
+{
+	wind::shared_ptr<double> r(new double(1.25));
+	thread t1(
+		[&]() {
+			for (size_t i = 0; i < 100000; ++i)
+			{
+				wind::shared_ptr<double> copy(r);
+			}
+		}
+	);
+
+	thread t2(
+		[&]() {
+			for (size_t i = 0; i < 100000; ++i)
+			{
+				wind::shared_ptr<double> copy(r);
+			}
+		}
+	);
+
+	t1.join();
+	t2.join();
+}
+```
+
+很明显, 引用计数反正肯定是对不上数了, 所以肯定会出错. 所以现在我们要用`atomic`保护一下, 而且由于`atomic`支持加加减减, 这里只需要把声明和初始化列表稍微修改一下即可.
+
+需要注意的是, `shared_ptr`本身是线程安全的, 但它并不能保护其内部管理的数据, 所以如果要对`shared_ptr`中的资源进行多线程修改, 还是要进行保护, 由于这里已经套了一层, 所以这里用锁是更好的. 
+
 # end 

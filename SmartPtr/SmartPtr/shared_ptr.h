@@ -1,6 +1,7 @@
 #pragma once
 
 #include<functional>
+#include<atomic>
 
 namespace wind
 {
@@ -10,7 +11,7 @@ namespace wind
 	private:
 		T* _ptr;
 		std::function<void(T*)> _del = [](T* ptr) {delete ptr; };
-		size_t* _count;
+		std::atomic<size_t>* _count;
 		inline void release_control()
 		{
 			if (--*_count == 0)
@@ -24,7 +25,7 @@ namespace wind
 		shared_ptr()
 			:_ptr(nullptr)
 			, _del([](T* ptr) {delete ptr; })
-			, _count(new size_t(1))
+			, _count(new std::atomic<size_t>(1))
 		{
 		}
 
@@ -32,13 +33,13 @@ namespace wind
 		shared_ptr(T* ptr, Del del)
 			:_ptr(ptr)
 			, _del(del)
-			, _count(new size_t(1))
+			, _count(new std::atomic<size_t>(1))
 		{
 		}
 
 		shared_ptr(T* ptr)
 			:_ptr(ptr)
-			, _count(new size_t(1))
+			, _count(new std::atomic<size_t>(1))
 		{
 		}
 
