@@ -43,7 +43,7 @@ void InsertTail(SListNode** PPtrHead, SListDataType x)
 	SListNode* PtrTrav = *PPtrHead;
 	SListNode* NewNode = CreateNode(x);
 	if (PtrTrav == NULL)
-	{
+	{ 
 		*PPtrHead = NewNode;
 	}
 	else
