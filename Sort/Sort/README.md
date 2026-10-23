@@ -19,7 +19,7 @@
 
 如果某轮比较区的比较都是合法的（符合相对大小），则证明此时比较区已经有序，不需要再进行比较，比较区就会整体并入保护区。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409011856651.gif)
+![动画](https://img.mdwind.online/md/202409011856651.gif)
 
 思路明白之后，写代码就不难了：
 
@@ -121,7 +121,7 @@ int main()
 }
 ```
 
-![image-20240901190841502](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409011908607.png)
+![image-20240901190841502](https://img.mdwind.online/md/202409011908607.png)
 
 可以看到，测试是通过的。
 
@@ -164,7 +164,7 @@ int main()
 }
 ```
 
-![image-20240901192343599](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409011923693.png)
+![image-20240901192343599](https://img.mdwind.online/md/202409011923693.png)
 
 这里显示0毫秒是因为单位的精确度不够，数组成员的个数过少，可以换个数。
 
@@ -178,7 +178,7 @@ int main()
 }
 ```
 
-![image-20240901192731726](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409011927844.png)
+![image-20240901192731726](https://img.mdwind.online/md/202409011927844.png)
 
 ### 插入排序
 
@@ -186,7 +186,7 @@ int main()
 
 我们先说连续型，也叫直接插入排序。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409021314164.gif)
+![动画](https://img.mdwind.online/md/202409021314164.gif)
 
 实际代码与动图并不完全相同，实际代码是将对比区的首元素临时拷贝一份，这里的删除实际是覆写，但为了更好理解，动图忽略了这些细节。
 
@@ -264,7 +264,7 @@ int main()
 }
 ```
 
-![image-20240902134310018](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409021343082.png)
+![image-20240902134310018](https://img.mdwind.online/md/202409021343082.png)
 
 直接插入排序的时间复杂度是标准的等差数列，所以时间复杂度就不细说了，就是$0(N^2)$。不过对于直接插入排序来说，不太容易真的出现$N^2$级别的时间复杂度；出现$N^2$级别的时间复杂度意味着每次比较都是第三种情况，此时的数据其实就是逆序结构。比如在上面的例子中，直接排序会把输入的数组转化为升序数组，如果出现$N^2$级别的时间复杂度，那就意味着输入的数组就是降序数组。
 
@@ -286,7 +286,7 @@ int main()
 
 这里我们暂且将“一定单位”设为3。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409031322975.gif)
+![动画](https://img.mdwind.online/md/202409031322975.gif)
 
 经过预排序的数组相比未经过预排序的数组相比，在进行直接插入排序时，会出现更多每轮比较只进行一次的情况，算法的时间复杂度将更加靠近$O(N)$。
 
@@ -372,11 +372,11 @@ int main()
 }
 ```
 
-![image-20240903153837511](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409031538889.png)
+![image-20240903153837511](https://img.mdwind.online/md/202409031538889.png)
 
 我们把`intervals`改成1试试
 
-![image-20240903154137223](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409031541395.png)
+![image-20240903154137223](https://img.mdwind.online/md/202409031541395.png)
 
 我们发现此时输出的数组就是有序的，为什么呢？因为间隔为1时，每个独立数组其实就只有一个成员，或者说，间隔为1的时候，独立数组只有一个，那就是输入数组本身。也就是说，直接插入排序，或者说连续式插入排序其实就是希尔排序，或者说离散式排序的一种特例，它们之间是被包含与包含的关系。
 
@@ -435,7 +435,7 @@ int main()
 }
 ```
 
-![image-20240903215139914](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409032151156.png)
+![image-20240903215139914](https://img.mdwind.online/md/202409032151156.png)
 
 希尔排序的效率远高于直接插入排序。甚至可以直接与快排和堆排序一较高下。
 
@@ -469,7 +469,7 @@ int main()
 
 我们稍微优化一下，每轮比较把最大值和最小值都找出来。我们通过交换把这两个极值放在合适的位置上：
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409041525680.gif)
+![动画](https://img.mdwind.online/md/202409041525680.gif)
 
 大概是这个意思，不得不说，选择排序效率太低了，我画图都画了很长时间，画完没有细看是不是完全对的。
 
@@ -543,7 +543,7 @@ int main()
 }
 ```
 
-![image-20240904153338179](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409041533321.png)
+![image-20240904153338179](https://img.mdwind.online/md/202409041533321.png)
 
 ### 堆排序
 
@@ -637,7 +637,7 @@ int main()
 }
 ```
 
-![image-20240905083612392](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409050836625.png)
+![image-20240905083612392](https://img.mdwind.online/md/202409050836625.png)
 
 ### 快速排序
 
@@ -657,7 +657,7 @@ int main()
 
 以下动画展现的是基于`Hoare`法单轮排序的整体过程，而非单轮排序过程。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409051944718.gif)
+![动画](https://img.mdwind.online/md/202409051944718.gif)
 
 ```c
 static int Hoare_mode(pSortData pArray, int left, int right)
@@ -719,7 +719,7 @@ int main()
 }
 ```
 
-![image-20240905203056503](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409052030659.png)
+![image-20240905203056503](https://img.mdwind.online/md/202409052030659.png)
 
 第二种，填坑法。
 
@@ -729,7 +729,7 @@ int main()
 
 和霍尔法类似，我们先默认基准值是数组第一个成员。在确定基准值之后，对基准值进行拷贝，由于拥有备份，所以基准值在数组中的原位置就可以随意处理了，此时它就变成了一个坑，可以写入数组中的其它数据。然后就要寻找填入坑的数据，由于坑最开始位于数组的第一个成员处，所以想要找数据自然是要从数组最后一个成员处开始寻找。于是`right`指针就登场了，它会寻找比基准值小的数，找到之后，就把自己指向的数据写入坑里，此时`right`指向的数据也有了拷贝，于是`right`就成为了新的坑，有新的坑，就要寻找新的数据，由于此时的坑在右侧，所以想要找新的数据自然是要从数组左侧开始找起，于是`left`就登场了，它会寻找大于基准值的数据，找到之后填入坑里，于是它指向的地方就成为了新坑，`right`就会找数据用来填入新坑，重复上述过程，当两指针相遇后，它们指向的位置就是基准值应处于的位置，于是把之前拷贝的基准值写入这个位置。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409060917428.gif)
+![动画](https://img.mdwind.online/md/202409060917428.gif)
 
 ```c
 static int FillGap_mode(pSortData pArray, int left, int right)
@@ -782,13 +782,13 @@ int main()
 }
 ```
 
-![image-20240906092011072](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409060920225.png)
+![image-20240906092011072](https://img.mdwind.online/md/202409060920225.png)
 
 第三种方法，没有统一的命名，依据思路，要不叫它“跟屁虫法”或者“搜索法”？
 
 在搜索法中，同样有两个指针，一个指针负责搜索目标，另一个指针负责尾随前一个指针。还是以数组首元素为基准值，搜索指针会寻找比基准值小的数据，找到一个，尾随指针就会向后移动一位，然后这两个指针指向的内存块就会交换数值，当搜索指针跑出数组后，尾随指针指向的内存块就会和基准值交换。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409060953553.gif)
+![动画](https://img.mdwind.online/md/202409060953553.gif)
 
 ```c
 static int Search_mode(pSortData pArray, int left, int right)
@@ -833,7 +833,7 @@ int main()
 }
 ```
 
-![image-20240906100446971](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409061004095.png)
+![image-20240906100446971](https://img.mdwind.online/md/202409061004095.png)
 
 也还可以优化优化：
 
@@ -862,7 +862,7 @@ static int Search_mode(pSortData pArray, int left, int right)
 
 接下来我们看看快速排序的时间复杂度，当基准值恰好为选中数组的中位数时，快速排序效率达到最高，此时快速排序的结构与二叉树类似
 
-![image-20240906132723453](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409061327706.png)
+![image-20240906132723453](https://img.mdwind.online/md/202409061327706.png)
 
 每个节点就可以被视为一个函数栈帧，一共有$log_2N$层，每一层所选中数组部分合在一块就相等于整个数组，所以每层都是$N$，再乘一下，于是就得到时间复杂度$O(N*log_2N)$。
 
@@ -943,7 +943,7 @@ int main()
 }
 ```
 
-![image-20240908200824256](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409082008593.png)
+![image-20240908200824256](https://img.mdwind.online/md/202409082008593.png)
 
 看样子是函数栈帧层数过多，栈溢出了。
 
@@ -959,11 +959,11 @@ int main()
 }
 ```
 
-![image-20240908203743047](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409082037232.png)
+![image-20240908203743047](https://img.mdwind.online/md/202409082037232.png)
 
 现在加上三数选中，再来一次。
 
-![image-20240908203850427](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409082038544.png)
+![image-20240908203850427](https://img.mdwind.online/md/202409082038544.png)
 
 差别不是很明显，这应该是我电脑性能不行，参数设大一些就栈溢出了，理论上来说，参数越大，差别就应该越明显。等会以非递归实现快排之后，再试一试。
 
@@ -975,7 +975,7 @@ int main()
 
 还是回到霍尔法，以动图中的数组[  6,1,2,7,9,3,4,7,10,8 ]为例。图中，蓝色文本数字表示数组下标，蓝红色序列号表示先后顺序。
 
-![1e7d0fb3335ddd78a1de96e9b07f68d3](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409091954265.png)
+![1e7d0fb3335ddd78a1de96e9b07f68d3](https://img.mdwind.online/md/202409091954265.png)
 
 从这张图中，我们可以看到，下标数据遵循着“先进后出”的性质，哪种数据结构有“先进后出”的性质呢？那就是栈。注意这里说的“栈”是数据结构的栈，而不是内存的那个栈。我们自己开辟的栈是建立在内存的堆上的，堆的大小远大于栈（内存），所以就不会像递归那么容易出现栈溢出。
 
@@ -1017,7 +1017,7 @@ int main()
 }
 ```
 
-![image-20240909205856952](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409092058124.png)
+![image-20240909205856952](https://img.mdwind.online/md/202409092058124.png)
 
 看，即使是这样大的数据个数也不会栈溢出。
 
@@ -1035,7 +1035,7 @@ int main()
 
 含有三数选中时的结果：
 
-![image-20240909213236764](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409092132023.png)
+![image-20240909213236764](https://img.mdwind.online/md/202409092132023.png)
 
 现在我们把三数选中去掉，为了节约时间，就不打印了。
 
@@ -1053,7 +1053,7 @@ int main()
 
 为了方便起见，下面的动图没有考虑三数取中。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409122026105.gif)
+![动画](https://img.mdwind.online/md/202409122026105.gif)
 
 ```c
 static void _Quick_sort_root_particularly(pSortData pArray, int left, int right)
@@ -1103,7 +1103,7 @@ int main()
 
 当然，可以看到，我们之前写的比较函数还不够好，应该用整型或者其它类型，布尔值只有两个选项，而大小有三种可能：大于，小于，等于。应该用整型，大于0的代表大于，等于0的代表等于，小于0的代表小于。比较函数的缺陷之后我们还会再说。
 
-![image-20240913085445779](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409130854063.png)
+![image-20240913085445779](https://img.mdwind.online/md/202409130854063.png)
 
 一般来说，这种级别的快排就没有什么问题了。但在某些在线编程测试平台上，即使是这种级别的快排依旧无法通过，无法通过的原因是因为上面的代码没有三数选中，所以效率有些低；但是，即使加上之前那三个方法的三数选中，依旧无法通过，因为，快排被这个平台恶意针对了，它的测试用例恰好是左中右就是极值，所以让三数选中失效了。
 
@@ -1157,7 +1157,7 @@ int middle_of_three(pSortData pArray, int left, int right)
 
 拆成1个成员怎么办呢？比如现在已经有两个已经“被迫”（就一个成员吗）有序的数组了，第一个数组，有一个成员，是4；第二个数组，是1,；归并归并，就是归档，合并；于是我们先把这两个数组的首元素比较一下，我们发现，1是更小的，于是就把1拷贝到一个暂时的空间，然后第二个数组遍历完了，于是就把第一个数组剩下的部分，也就是那个6，拷贝到暂存空间中，然后再拷贝回去，这样，原数组的这两个子数组合并完了，于是，此时原数组的那个地方就变成了1,6；好的，现在已经有两个数组，这两个数组都有两个成员，第一个数组是1,6；第二个数组是3,8；然后呢，我们把这两个数组的首元素比较一下，我们发现，1更小是吧，就把1拷贝到暂存空间中，然后对比一下，第一个数组的第二成员和第二个数组的第一个成员，我们发现3更小，是吧，那就把3拷贝到暂存空间，然后再比较一下第一个数组和第二个成员的第二成员，我们发现6更小，于是拷贝到暂存空间，然后第一个数组没成员了，于是就把第二个数组的剩下部分再拷贝到暂存空间，此时暂存空间的这个地方就是1,3,6,8了，再把这地方拷贝会原数组的地方就行了。
 
-![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409111041977.gif)
+![动画](https://img.mdwind.online/md/202409111041977.gif)
 
 因为某些不可抗拒因素，可能有些帧没有被成功录入。
 
@@ -1217,7 +1217,7 @@ void Merge_sort(pSortData pArray, int Size)
  }
  ```
 
-![image-20240911104406653](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409111044774.png)
+![image-20240911104406653](https://img.mdwind.online/md/202409111044774.png)
 
 归并排序的递归写法还有一些地方可以再优化优化。我们知道，递归其实就是把函数栈帧以树的形式组织起来。当归并排序输入的数据量过大时，这棵树就会有太多的细小分支，这些细小分支中的数组个数都很小，没必要让它再继续分支下去。于是我们就可以设计一种机制，当数组的成员个数小到一定程度时，调用其他排序算法对这个小数组进行排序，这样的话，这个小数组其实也算是被迫有序了，就可以参与到后续的合并过程中。而且由于树结构的特点，比如，现在假设归并排序的递归版本所运行的栈帧树就是一棵标准的满二叉树，这样的话，每个栈帧都可以被视为一个节点；此时，这棵树一共有$2^H-1$个节点，最后一层的节点数就是$2^{H - 1}$,倒数第二层就是$2^{H - 2}$,也就是说，最后一层大概占总结点数的50%，倒数第二层大概占总结点数的25.5%；而末端优化优化的正是这些更深处的层，于是，归并排序的总递归次数就少了不小。
 
@@ -1264,7 +1264,7 @@ void _Merge_sort_root(pSortData pArray, int left, int right, pSortData p_Tempora
 }
 ```
 
-![image-20240912190529299](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409121905605.png)
+![image-20240912190529299](https://img.mdwind.online/md/202409121905605.png)
 
 -----
 
@@ -1351,7 +1351,7 @@ int main()
 }
 ```
 
-![image-20240912092136769](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409120921111.png)
+![image-20240912092136769](https://img.mdwind.online/md/202409120921111.png)
 
 还有一种方法实现归并排序的非递归，与上面的思想大致相同，主要区别是，这种写法的是一层一层地覆写回原数组的，而上面的写法是一对一对地覆写回原数组了。
 
@@ -1431,7 +1431,7 @@ int main()
 }
 ```
 
-![image-20240912094039704](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409120940795.png)
+![image-20240912094039704](https://img.mdwind.online/md/202409120940795.png)
 
 ## 内排序和外排序
 
@@ -1453,7 +1453,7 @@ int main()
 
 它首先会将要排序的数组遍历一遍，从而确定要排序数据的大致范围，然后依据这个范围开辟一个数组，接着再次遍历排序数组，对这些数据进行计数，遍历完后，对开辟数组的计数进行展开，就能得到有序数组，好吧，还是看动图吧。
 
-  ![动画](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409131459388.gif)
+  ![动画](https://img.mdwind.online/md/202409131459388.gif)
 
 绝对映射就是1就对应下标1,2就对应下标2,3就对应下标3,100000就对应100000那种。如果这样映射，就要建13个成员的数组了。
 
@@ -1515,7 +1515,7 @@ int main()
 
 很明显，计数排序很受数组数据范围的影响，所以不能使用通用测试模块，另外，你可能注意到，计数排序的数据类型用的全是原生类型，因为计数排序只能对整型，或者说整数进行排序，它的数据类型是被定死的。
 
-![image-20240913154406863](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202409131544473.png)
+![image-20240913154406863](https://img.mdwind.online/md/202409131544473.png)
 
 ## 稳定性
 

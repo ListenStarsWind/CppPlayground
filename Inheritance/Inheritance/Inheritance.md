@@ -47,25 +47,25 @@ protected:
 
 我们先不管那么多，现在只需要记一下继承的格式：`class Student : public Person`，其中的`public`描述的是继承关系，访问限定符`protected`先不要去管。
 
-![image-20241113103427115](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131034865.png)
+![image-20241113103427115](https://img.mdwind.online/md/202411131034865.png)
 
-![image-20241113103446940](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131034995.png)
+![image-20241113103446940](https://img.mdwind.online/md/202411131034995.png)
 
 `Person`中除了成员变量被继承了，成员函数也被继承了。
 
-![image-20241113103621994](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131036209.png)
+![image-20241113103621994](https://img.mdwind.online/md/202411131036209.png)
 
 暂且先不管如何初始化。
 
 上面我们稍微感受了继承，接下来我们详细说说继承的格式：
 
-![image-20241113104023481](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131040549.png)
+![image-20241113104023481](https://img.mdwind.online/md/202411131040549.png)
 
 C++为继承提供了多种方式，这与访问限定符相组合，就有了多种组合。
 
-![image-20241113104231348](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131042423.png)
+![image-20241113104231348](https://img.mdwind.online/md/202411131042423.png)
 
-![image-20241113104251991](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131042064.png)
+![image-20241113104251991](https://img.mdwind.online/md/202411131042064.png)
 
 之前我们不写继承，所以说`protected`和`private`是一样的，现在我们学到继承了，就要详细说说它们之间的区别了。
 
@@ -81,25 +81,25 @@ C++为继承提供了多种方式，这与访问限定符相组合，就有了�
 
 基类的`private`成员无论以何种方式继承，在类外，还是在派生类里都不可使用。
 
-![image-20241113110653025](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131106129.png)
+![image-20241113110653025](https://img.mdwind.online/md/202411131106129.png)
 
-![image-20241113110803123](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131108124.png)
+![image-20241113110803123](https://img.mdwind.online/md/202411131108124.png)
 
 现在把`Print`改成`protected`，现在在派生类里就可以使用了：
 
-![image-20241113111144548](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131111405.png)
+![image-20241113111144548](https://img.mdwind.online/md/202411131111405.png)
 
 但在类外仍是不可使用：
 
-![image-20241113111221682](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131112905.png)
+![image-20241113111221682](https://img.mdwind.online/md/202411131112905.png)
 
 另外再说一声，当不写继承方式时，编译器就会选取默认继承方式，如果派生类是class ，那默认为`private`
 
-![image-20241113112436298](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131124262.png)
+![image-20241113112436298](https://img.mdwind.online/md/202411131124262.png)
 
 如果派生类是struct ，那就默认为`public`
 
-![image-20241113112536845](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131125971.png)
+![image-20241113112536845](https://img.mdwind.online/md/202411131125971.png)
 
 不可见和私有的共同点在于它们都不能在类外使用，区别在于，不可见在派生类里也不能使用，但私有可以。
 
@@ -173,11 +173,11 @@ int main()
 
 我们配合代码理解。
 
-![image-20241113134745183](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131347850.png)
+![image-20241113134745183](https://img.mdwind.online/md/202411131347850.png)
 
 当Student以protected继承Person时，在C内部可以使用Person的接口，因此具有和Person相似的行为，可以对Person进行赋值
 
-![image-20241113135024790](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131350357.png)
+![image-20241113135024790](https://img.mdwind.online/md/202411131350357.png)
 
 虽然是用public继承的Student，但A的接口没有暴露出类外，类外依旧无法使用Person的接口，因此，无法进行赋值。
 
@@ -201,15 +201,15 @@ int main()
 
 基类和派生类之间的类域相互独立，因此它们可以有同名成员。
 
-![image-20241113154946120](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131549682.png)
+![image-20241113154946120](https://img.mdwind.online/md/202411131549682.png)
 
 比如，在这张图中，`Person and Student`都有成员`__number`，在派生类中，编译器默认使用该派生类中的`_number`。
 
-![image-20241113155341659](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131553018.png)
+![image-20241113155341659](https://img.mdwind.online/md/202411131553018.png)
 
 想要使用基类中的同名成员，需要指定域名。
 
-![image-20241113155512277](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131555623.png)
+![image-20241113155512277](https://img.mdwind.online/md/202411131555623.png)
 
 有时把这种行为（派生类访问同名成员时，默认使用该派生类成员）的行为叫做派生类同名成员隐藏了基类同名成员，这对函数仍旧适用。
 
@@ -236,11 +236,11 @@ public:
 
 这两个`fun`处于不同的域中，因此一定不是函数重载，实际上它们构成隐藏关系，
 
-![image-20241113160621355](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131606664.png)
+![image-20241113160621355](https://img.mdwind.online/md/202411131606664.png)
 
 同样的，需要指定域名之后再能调用A中的fun
 
-![image-20241113160814787](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131608102.png)
+![image-20241113160814787](https://img.mdwind.online/md/202411131608102.png)
 
 当然为了避免混淆，我们不推荐创建同名成员。
 
@@ -279,19 +279,19 @@ protected:
 
 可以看到，这里对派生类对象中基类部分的定义就像是创建匿名对象。
 
-![image-20241113163232508](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131632837.png)
+![image-20241113163232508](https://img.mdwind.online/md/202411131632837.png)
 
 对于拷贝构造来说，可以直接使用派生类对象定义派生类对象中的基类部分
 
-![image-20241113163953362](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131639812.png)
+![image-20241113163953362](https://img.mdwind.online/md/202411131639812.png)
 
-![image-20241113164210004](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131642315.png)
+![image-20241113164210004](https://img.mdwind.online/md/202411131642315.png)
 
 对于赋值重载来说，需要显式调用基类的赋值重载，这里一定要注意，指定域名，因为派生类的赋值重载和基类的赋值重载构成隐藏关系，如果不指定域名，派生类中的赋值重载就会一直自递归。
 
-![image-20241113165820992](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131658449.png)
+![image-20241113165820992](https://img.mdwind.online/md/202411131658449.png)
 
-![image-20241113165851208](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131658563.png)
+![image-20241113165851208](https://img.mdwind.online/md/202411131658563.png)
 
 对于析构函数来说，则有些特殊。如同常引用可以锚定匿名对象，使其不会立刻析构，而是在常引用生命周期结束后在析构。派生类对象中的基类部分的生命周期是依附于派生类对象的，因此在派生类的析构函数中不用显式调用基类的析构（实际上，在派生类中的析构函数中不能显式调用基类析构函数，至于到底为什么，我们先不考虑，这是多态中的学习内容，我们先跳过。）
 
@@ -301,7 +301,7 @@ protected:
 
 也就是说析构在此种场景下不用写。
 
-![image-20241113171609426](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411131716810.png)
+![image-20241113171609426](https://img.mdwind.online/md/202411131716810.png)
 
 据说析构的顺序是个高频考点，一定是先派生再基类。如果上面的说法是从逻辑层面上解释的话，那接下来的解释就是应用层面的：如果先基再派生，就会出现对基类的重复析构，所以一定要先派生再基类。
 
