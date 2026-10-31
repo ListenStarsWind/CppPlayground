@@ -54,7 +54,7 @@ int main()
 }
 ```
 
-![image-20241004105005509](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410041050744.png)
+![image-20241004105005509](https://img.mdwind.online/md/202410041050744.png)
 
 ## 优化
 
@@ -93,7 +93,7 @@ void SLTest2()
 }
 ```
 
-![image-20241004112616476](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410041126619.png)
+![image-20241004112616476](https://img.mdwind.online/md/202410041126619.png)
 
 ## 出现问题
 
@@ -143,7 +143,7 @@ namespace wind
 }
 ```
 
-![image-20241004113917023](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410041139162.png)
+![image-20241004113917023](https://img.mdwind.online/md/202410041139162.png)
 
 然后就发现一个令人匪夷所思的现象
 
@@ -176,7 +176,7 @@ void SLTest3()
 }
 ```
 
-![image-20241004114344747](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410041143830.png)
+![image-20241004114344747](https://img.mdwind.online/md/202410041143830.png)
 
 一眼就可以看出问题，`[]`的重载函数引用返回没加const：
 
@@ -256,6 +256,6 @@ int main()
 }
 ```
 
-![image-20241004115121608](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410041151696.png)
+![image-20241004115121608](https://img.mdwind.online/md/202410041151696.png)
 
 # 完
