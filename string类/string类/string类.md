@@ -6,9 +6,11 @@
 
 ## [string的文档主界面](https://legacy.cplusplus.com/reference/string/string/)
 
-![image-20241012090353846](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410120903961.png)
+![image-20241012090353846](https://img.mdwind.online/md/202410120903961.png)
 
 文档刚开头，就描述了`string`是一个类`class`，位于`std`命名域中，它实际是由模版`basic_string`以`<char>`的形式实例化出的。
+
+不应该一边写文档, 一边教英语, 但是有些专有术语还是很重要的, 需要对下文的形式进行把握, 既不能完全不说, 也不能全说.
 
 之后是简要概述。`string`是一个对象【Strings are objects】，是一个什么样的对象，是用来表示【represent】某种有序集合【sequences】的对象，这种有序集合的组成元素是什么？是字符【of characters】。
 
@@ -29,7 +31,7 @@
 - const_reference：常引用，此处为`const char&`
 - pointer：指针，此处为`char*`
 - const_pointer：常指针，此处为`const char*`
-- iterator：用于定义容器中元素的遍历方式，此处为指向字符的【to char】随机访问迭代器【random access iterator】，也可转换成【convertible to】常量迭代器【const_iterator】
+- iterator：用于定义容器中元素的遍历方式，此处为指向字符的【to char】随机访问迭代器【random access iterator】，也可转换成【convertible to】常量迭代器【const_iterator】(这是第一个接触迭代器的地方)
 - const_iterator：常量迭代器，此处为`a random access iterator to const char`
 - reverse_iterator：反向迭代器，用于倒着遍历元素，此处为`reverse_iterator<iterator>`
 - const_reverse_iterator：常量反向迭代器，此处为`reverse_iterator<const_iterator>`
@@ -67,7 +69,7 @@
 - reserve：用于提前扩展容量的大小，避免频繁扩展降低效率，`Request a change in capacity (public member function )`
 - clear：用于清空容量中的成员，以承接其它成员，`Clear string (public member function )`
 - empty：判断容器是否为空，`Test if string is empty (public member function )`
-- shrink_to_fit：调整容量，使其刚好能放下字符串中的所有字符，`Shrink to fit (public member function )`
+- shrink_to_fit：调整容量，使其刚好能放下当前所存储字符串中的所有字符，`Shrink to fit (public member function )`
 
 元素访问【Element access】:
 
@@ -126,125 +128,168 @@
 
 在`constructor`中可以看到该类的实例化方式。
 
-![image-20241012165510456](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410121655654.png)
+![image-20241012165510456](https://img.mdwind.online/md/202410121655654.png)
 
 ```cpp
-void test1()
-{
-	// 以无参的形式实例化
-	std::string s1;
-	// 以常量字符串的形式实例化
-	std::string s2("string");
+#include <iostream>
+#include <string>
 
-	// 容量不够会自己扩容
+int main() {
+    // 以无参形式实例化
+    std::string s1;
+    // 以常量字符串形式实例化
+    std::string s2("hello string!");
 
-	// 支持流插入
-	std::cout << s2 << std::endl;
-	// 支持流提取
-	std::cin >> s1;
-	std::cout << s1 << std::endl;
+    // 容量不够会自己扩容
+
+    // 支持流插入, 流提取
+    std::cout << s2 << std::endl;
+    std::cin >> s1;
+    std::cout << s1 << std::endl;
+    return 0;
 }
 ```
 
-![image-20241012170616516](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410121706589.png)
+图片仅供参考, 其他的也是, 有时候图片上用的代码和文章里写的代码有些细节上的差异
+
+![image-20241012170616516](https://img.mdwind.online/md/202410121706589.png)
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+hello string!
+hello STL!
+hello
+[wind@ubuntu-asus build]$ # 输入截断和流提取有关, 我们现在不去关注
+```
 
 ### 字符串拼接
 
-![image-20241012170918517](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410121709659.png)
+![image-20241012170918517](https://img.mdwind.online/md/202410121709659.png)
 
 ```cpp
-void test2()
-{
-	std::string s1("class");
-	std::string s2(" string");
-	std::string s3 = s1 + s2;
-	std::cout << s3 << std::endl;
-	std::cout << "std::" + s3 << std::endl;
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string s1("hello ");
+    std::string s2("string");
+    std::string s3 = s1 + s2;
+    std::cout << s3 << std::endl;
+    std::cout << "std::" << s2 << std::endl;
+    return 0;
 }
 ```
 
-![image-20241012171435552](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410121714636.png)
+![image-20241012171435552](https://img.mdwind.online/md/202410121714636.png)
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+hello string
+std::string
+[wind@ubuntu-asus build]$ 
+```
 
 ### 字符串遍历
 
 ```cpp
-void test3()
-{
-	std::string s1("abcd");
-	std::string s2("-----------------");
+#include <iostream>
+#include <string>
 
-	// 使用`[]`重载遍历字符串
-	int i = 0;
-	for (; i < s1.size(); i++)
-	{
-		++s1[i];
-	}
-	std::cout << s1 << std::endl;
-	// 注意，`[]`没有范围检查，可能会越界访问
-	// 可以用成员函数`at`替代
-	for (i = 0; i < s1.size(); i++)
-	{
-		--s1.at(i);
-	}
+int main() {
+    std::string s1("abcd");
+    std::string s2("=====================");
 
-	std::cout << s2 << std::endl;
-	// 使用迭代器遍历字符串
-	// 迭代器是对容器中元素遍历的通用方案
-	std::string::iterator it = s1.begin();
-	while (it != s1.end())
-	{
-		std::cout<<*it;
-		++it;
-	}
-	// begin返回指向第一个有效字符的迭代器
-	// end返回指向最后一个有效字符的下一字符的迭代器
-	// s1存储的是"abcd\0",一共五个字符，最后一个有效字符是'd'
-	// 即，end返回的迭代器指向'\0'
-	// 迭代器行为很像指针，甚至它本身就是指针
-	std::cout << std::endl;
-	// 注意，循环条件不要用`<`比较
-	// 因为迭代器是通用的，而某些容器中的成员没有先后概念
-	// 比如树状结构，环装结构，但对于这些容器成员来说，是否等于的
-	// 概念仍是确定的
-	std::cout << s2 << std::endl;
-	// 除此之外，还有反向迭代器
-	// rbegin返回一个反向的迭代器，具体指向字符串的最后一个有效字符
-	// rend返回一个指向第一个有效字符前一字符的迭代器
-	// “第一个有效字符前一字符”只是一个概念上的位置，实际并不存在
-	std::string::reverse_iterator rit = s1.rbegin();
-	while (rit != s1.rend())
-	{
-		std::cout << *rit;
-		++rit;
-	}
-	std::cout << std::endl << s2 << std::endl;
-	// 迭代器的++都是重载过的，表示方向，朝终止位`end`迭代
-	// 对反向迭代器仍是如此，++表示朝终止位`rend`迭代
-	// 迭代器也有--重载，不过用的人不多
+    // 使用 operator[] 重载遍历字符串
+    int i = 0;
+    int len = s1.size();
+    for (; i < len; i++) {
+        ++s1[i];
+    }
+    std::cout << s1 << std::endl;
 
-	// 范围for其实是对迭代器的进一步封装
-	// 由于迭代器的类型挺长的，所以直接用auto占位
-	for (auto ch : s1)
-	{
-		std::cout << ch;
-	}
-	std::cout << std::endl;
-	// 修改用引用
-	for (auto& ch : s1)
-	{
-		++ch;
-	}
-	std::cout << s1 << std::endl;
+    // 注意, `[]`没有范围检查, 可能会越界访问
+    // 可以使用成员函数 `at` 来替代
+    for (i = 0; i < len; i++) {
+        --s1[i];
+    }
+    std::cout << s1 << std::endl;
+
+    // 使用迭代器遍历字符串
+    // 迭代器是访问 STL 容器中元素的通用方式
+    std::string::iterator it = s1.begin();
+    while (it != s1.end()) {
+        std::cout << *it;
+        ++it;
+    }
+    // begin 返回指向第一个有效字符的迭代器
+    // end 返回指向最后一个元素下一元素的迭代器
+    // 对于 "abcd\0"来说, begin 返回的迭代器指向a
+    // end 返回的迭代器指向 \0
+    // 迭代器本身的设计目标就是像指针一样使用
+    // 甚至有些底层就是指针
+    std::cout << std::endl;
+    // 因为有些容器中元素的序列没有明确的大小及线性关系
+    // 所以不建议使用 <= 这种比较运算符
+    // 而是都使用 == 或者 !=
+    std::cout << s2 << std::endl;
+
+    // 除此之外, 也有反向迭代器
+    // rbegin 返回指向最后一个有效元素的迭代器
+    // rend 返回第一个有效元素前一个元素的迭代器
+    // rend 所指向的元素其实并不存在, 那只是一个概念上的位置
+    std::string::reverse_iterator rit = s1.rbegin();
+    while (rit != s1.rend()) {
+        std::cout << *rit;
+        ++rit;
+    }
+    std::cout << std::endl;
+    // 迭代器的 ++ 经过特殊重载
+    // 表示以各自 end 为目标的下一元素序列位置
+    // iterator ++ 就是 begin -> end
+    // reverse_iterator(为了看得清楚, 上面故意不用auto)
+    // 就是 rbegin -> rend
+    // -- 看情况, 有的容器迭代器可能不提供
+
+    // C++ 的一个新语法(其实已经很旧了)
+    // (只是对刚看到的我们比较新)
+    // 叫做范围 for, 其实就是对普通迭代器
+    // 的一种再封装, 让我们少写点东西
+    for (auto ch : s1) {
+        std::cout << ch;
+    }
+    std::cout << std::endl;
+
+    // 当然也可以使用引用的方式
+    // 对这些元素进行读写操作
+    // 或者优化效率(看情况)
+    for (auto& ch : s1) {
+        std::cout << ch;
+    }
+    std::cout << std::endl;
+
+    return 0;
 }
+```
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+bcde
+abcd
+abcd
+=====================
+dcba
+abcd
+abcd
+[wind@ubuntu-asus build]$ 
 ```
 
 ### 常迭代器
 
-为了适应常对象，begin和end或者rbegin和rend都有两个重载版本，一个是普通对象，一个常对象
+为了适应常对象，begin和end或者rbegin和rend都有两个重载版本，一个索引普通对象，一个索引常对象
 
-![image-20241012195442259](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410121954516.png)
+![image-20241012195442259](https://img.mdwind.online/md/202410121954516.png)
 
-![image-20241012195511649](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410121955819.png)
+![image-20241012195511649](https://img.mdwind.online/md/202410121955819.png)
 
 C++11后，又添加了`cbegin  cend   crbegin  crend`，它们没重载版本，就是专门用于常对象的。
 
@@ -252,7 +297,7 @@ C++11后，又添加了`cbegin  cend   crbegin  crend`，它们没重载版本�
 
 在上面的文档中我们看到一个被特别标注的值：npos
 
-![image-20241012200348416](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410122003574.png)
+![image-20241012200348416](https://img.mdwind.online/md/202410122003574.png)
 
 `static const size_t npos = -1;`
 
@@ -260,41 +305,36 @@ C++11后，又添加了`cbegin  cend   crbegin  crend`，它们没重载版本�
 
 在构造函数里，提供了一个实例化方案，可以用字符串的一部分实例化出另一个字符串
 
-`string (const string& str, size_t pos, size_t len = npos);`根据文档描述，我们知道，这一部分是从`pos`开始，从`len`结束的，当`len`比`obj.size()`还大时，只会取到`obj.size()`这一位。而`len`有个缺省值`npos`，所以不写第三个参数实际上就会把剩下的部分全都取用。
+`string (const string& str, size_t pos, size_t len = npos);`根据文档描述，我们知道，这一部分是从`pos`开始，从`len`结束的，当`len`比`obj.size()`还大时，只会取到`obj.size()`这一位。而`len`有个缺省值`npos`，所以不写第三个参数就给出了一个始终大于等于(这里的等于只是从严谨性上来说)源本字符串长度的长度, 这其实就相当于说, 从 `pos`开始截取之后剩余的全部
 
 ### 容量
 
 ```cpp
-void test4()
-{
-	std::string s;
-	std::cout << "initial capacity:";
-	size_t old = s.capacity();
-	std::cout << old << std::endl;
-	int cir = 0;
-	for (; cir < 100; cir++)
-	{
-		s.push_back('c');
-		size_t n = s.capacity();
-		if (n != old)
-		{
-			std::cout << "trigger expansion,The new capacity is:";
-			std::cout << n << std::endl;
-			old = n;
-		}
-	}
-}
+#include <iostream>
+#include <string>
 
-int main()
-{
-	test4();
-	return 0;
+int main() {
+    std::string s;
+    size_t prev = s.capacity();
+    std::cout << "初始容量: " << prev << std::endl;
+    int cir = 0;
+    for (; cir < 100; cir++) {
+        s.push_back('c');
+        size_t curr = s.capacity();
+        if (prev != curr) {
+            std::cout << "触发扩容, 新的容量是: ";
+            std::cout << curr << std::endl;
+            prev = curr;
+        }
+    }
+
+    return 0;
 }
 ```
 
 VS2022的运行结果为：
 
-![image-20241014133109574](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141331751.png)
+![image-20241014133109574](https://img.mdwind.online/md/202410141331751.png)
 
 g++的运行结果是：
 
@@ -316,40 +356,46 @@ trigger expansion,The new capacity is:128
 
 我们看到SGI版本的string是很规规矩矩地二倍扩容的，P.J.版本的string就有自己的一套，C++标准没有规定扩容机制，所以各个编译器厂商有自己的逻辑。除此之外，我们还可以看出，最起码SGI版本的容量参数是不包括`\0`的，最开始的容量就是0，它的容量参数就是可容纳有效字符的个数。
 
+clang++
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+初始容量: 22
+触发扩容, 新的容量是: 47
+触发扩容, 新的容量是: 95
+触发扩容, 新的容量是: 191
+[wind@ubuntu-asus build]$ 
+```
+
 ---------------------------
 
 让我们来看看`reserve`，为了避免多次扩容而导致的效率低下，可以先预估字符串的大小，一次性提前开辟。
 
 ```cpp
-void test4()
-{
-	std::string s;
-	s.reserve(100);
-	std::cout << "initial capacity:";
-	size_t old = s.capacity();
-	std::cout << old << std::endl;
-	int cir = 0;
-	for (; cir < 100; cir++)
-	{
-		s.push_back('c');
-		size_t n = s.capacity();
-		if (n != old)
-		{
-			std::cout << "trigger expansion,The new capacity is:";
-			std::cout << n << std::endl;
-			old = n;
-		}
-	}
-}
+#include <iostream>
+#include <string>
 
-int main()
-{
-	test4();
-	return 0;
+int main() {
+    std::string s;
+    s.reserve(100);
+    size_t prev = s.capacity();
+    std::cout << "初始容量: " << prev << std::endl;
+    int cir = 0;
+    for (; cir < 100; cir++) {
+        s.push_back('c');
+        size_t curr = s.capacity();
+        if (prev != curr) {
+            std::cout << "触发扩容, 新的容量是: ";
+            std::cout << curr << std::endl;
+            prev = curr;
+        }
+    }
+
+    return 0;
 }
 ```
 
-![image-20241014141338203](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141413311.png)
+![image-20241014141338203](https://img.mdwind.online/md/202410141413311.png)
 
 我们可以看到，微软还是有自己的逻辑，它可能出于内存对齐的考虑，不是直接扩容到100的，而是比100多。
 
@@ -363,6 +409,14 @@ initial capacity:100
 [wind@starry-sky SGI版本string]$
 ```
 
+clang++
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+初始容量: 103
+[wind@ubuntu-asus build]$ 
+```
+
 `reserve`能不能缩容呢？文档的描述是："In all other cases, it is taken as a non-binding request to shrink the string capacity: the container implementation is free to optimize otherwise and leave the string with a capacity greater than *n*."
 
 “non-binding request”（非约束性请求）是什么意思，它的意思是对于缩小容量的请求（也就是参数设置地比现在容量小），系统可以出于自己的策略灵活响应，这个请求不具有强制性。
@@ -370,33 +424,43 @@ initial capacity:100
 对于上文的其它情况，也就是缩小字符串的容量，将被视为一种非约束请求：容器的具体实现可以出于优化的考虑，自由地做出其它选择，使得字符串的容量依旧比参数n大。
 
 ```cpp
-void test4()
-{
-	std::string s;
-	s.reserve(100);
-	std::cout << "initial capacity:";
-	size_t old = s.capacity();
-	std::cout << old << std::endl;
-	int cir = 0;
-	for (; cir < 100; cir++)
-	{
-		s.push_back('c');
-		size_t n = s.capacity();
-		if (n != old)
-		{
-			std::cout << "trigger expansion,The new capacity is:";
-			std::cout << n << std::endl;
-			old = n;
-		}
-	}
-	s.reserve(10);
-	std::cout << "Current capacity:" << s.capacity() << std::endl;
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string s;
+    s.reserve(100);
+    size_t prev = s.capacity();
+    std::cout << "初始容量: " << prev << std::endl;
+    int cir = 0;
+    for (; cir < 100; cir++) {
+        s.push_back('c');
+        size_t curr = s.capacity();
+        if (prev != curr) {
+            std::cout << "触发扩容, 新的容量是: ";
+            std::cout << curr << std::endl;
+            prev = curr;
+        }
+    }
+    s.reserve(10);
+    std::cout << "当前容量: " << s.capacity() << std::endl;
+
+    return 0;
 }
 ```
 
-![image-20241014144657536](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141446640.png)
+![image-20241014144657536](https://img.mdwind.online/md/202410141446640.png)
 
 我们看到，VS直接无视了请求。
+
+clang++
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+初始容量: 103
+当前容量: 103
+[wind@ubuntu-asus build]$ 
+```
 
 ---------------
 
@@ -423,17 +487,17 @@ void test5()
 }
 ```
 
-![image-20241014151801601](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141518423.png)
+![image-20241014151801601](https://img.mdwind.online/md/202410141518423.png)
 
-![image-20241014151833674](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141518452.png)
+![image-20241014151833674](https://img.mdwind.online/md/202410141518452.png)
 
-![image-20241014151901361](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141519537.png)
+![image-20241014151901361](https://img.mdwind.online/md/202410141519537.png)
 
-![image-20241014152114545](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141521250.png)
+![image-20241014152114545](https://img.mdwind.online/md/202410141521250.png)
 
 接下来是删除
 
-![image-20241014152352323](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141523107.png)
+![image-20241014152352323](https://img.mdwind.online/md/202410141523107.png)
 
 ### 元素访问
 
@@ -441,13 +505,13 @@ void test5()
 
 `operator[]`的越界逻辑：
 
-![image-20241014154334129](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141543268.png)
+![image-20241014154334129](https://img.mdwind.online/md/202410141543268.png)
 
 未定义的行为，也不知道会发生什么。
 
 `at`的越界逻辑：
 
-![image-20241014154612100](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141546258.png)
+![image-20241014154612100](https://img.mdwind.online/md/202410141546258.png)
 
 如果越界，会抛出异常。
 
@@ -455,11 +519,11 @@ void test5()
 
 `append`比`operator+=`多了一些功能：
 
-![image-20241014155201886](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141552045.png)
+![image-20241014155201886](https://img.mdwind.online/md/202410141552045.png)
 
 `operator+=`的参数可以是其他对象，另一个字符串，字符。
 
-![image-20241014155358942](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141553101.png)
+![image-20241014155358942](https://img.mdwind.online/md/202410141553101.png)
 
 `append`多了追加部分字符串的功能。
 
@@ -471,62 +535,182 @@ void test5()
 
 `assign`和`operator=`都有赋值功能。
 
-![image-20241014160546177](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141605356.png)
+![image-20241014160546177](https://img.mdwind.online/md/202410141605356.png)
 
-![image-20241014160628414](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141606577.png)
+![image-20241014160628414](https://img.mdwind.online/md/202410141606577.png)
 
 可以看到`assign`比`operator=`稍微多一点功能，主要是选取部分内容赋值的。
 
 ### 插入
 
-![image-20241014160858733](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141608885.png)
+![image-20241014160858733](https://img.mdwind.online/md/202410141608885.png)
 
 头插，使用下标或者迭代器
 
 ```cpp
-void test6()
-{
-	std::string s("hello world");
-	s.insert(0, 1, 'x');
-	std::cout << s << std::endl;
-	s.insert(s.begin(), 'x');
-	std::cout << s << std::endl;
+#include <iostream>
+#include <string>
+
+int main() {
+    // 1. 指定下标，插入 C 风格字符串
+    {
+        std::string str = "Hello world";
+
+        str.insert(6, "beautiful ");
+
+        std::cout << str << '\n';  // Hello beautiful world
+    }
+
+    // 2. 指定下标，插入 std::string 对象
+    {
+        std::string str = "New York";
+
+        str.insert(8, std::string(" City"));
+
+        std::cout << str << '\n';  // New York City
+    }
+
+    // 3. 指定下标，插入指定数量的相同字符
+    {
+        std::string str = "Go";
+
+        str.insert(2, 3, '!');
+
+        std::cout << str << '\n';  // Go!!!
+    }
+
+    // 4. 指定下标，插入 C 风格字符串的前 n 个字符
+    {
+        std::string str = "The cat sleeps";
+
+        str.insert(4, "black sheep", 6);
+
+        std::cout << str << '\n';  // The black cat sleeps
+    }
+
+    // 5. 使用迭代器，插入指定字符区间
+    {
+        std::string str = "I code";
+        std::string extra = "write ";
+
+        str.insert(str.begin() + 2, extra.begin(), extra.end());
+
+        std::cout << str << '\n';  // I write code
+    }
+
+    // 6. 使用迭代器，插入初始化列表中的字符
+    {
+        std::string str = "Rain";
+
+        str.insert(str.end(), {'b', 'o', 'w'});
+
+        std::cout << str << '\n';  // Rainbow
+    }
+
+    return 0;
 }
+// 需要注意的是, 除非你知道自己在干什么 否则最好不要拿迭代器加几
 ```
 
-![image-20241014161608900](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141616987.png)
+```text
+[wind@ubuntu-asus build]$ ./main-debug
+Hello beautiful world
+New York City
+Go!!!
+The black cat sleeps
+I write code
+Rainbow
+[wind@ubuntu-asus build]$ 
+```
 
-使用下标指定时，还必须再加一个参数，用来表示插入次。
+~~使用下标指定时，还必须再加一个参数，用来表示插入次。~~  这话应该是不对的, 也不需要过渡性强调. 
 
 ### 删除
 
-![image-20241014162242962](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141622123.png)
+![image-20241014162242962](https://img.mdwind.online/md/202410141622123.png)
 
 可以指定下标位置连续删除，也可以用迭代器单个删除。由于使用下标索引位置的重载函数有缺省值，所以不提供参数就会把字符串全删除。
 
 ### 替换
 
-![image-20241014162647001](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141626174.png)
+![image-20241014162647001](https://img.mdwind.online/md/202410141626174.png)
 
 一般来说，`replace`有三个主要的参数，用于指示替换起始位置的索引，用于描述被替换字符的数目，用于描述替换的内容。
 
 ```cpp
-void test7()
-{
-	std::string s1("hello world");
-	// 把空格【下标为5】的那一个字符替换成%?
-	s1.replace(5, 1, "%?");
-	std::cout << s1 << std::endl;
-	// 此时很明显有数据挪动
-	// 如果第二个参数就是第三个参数的有效字符个数
-	// 那就只是单纯平替，没有挪动数据
-	std::string s2("hello world");
-	s2.replace(5, 2, "%x");
-	std::cout << s2 << std::endl;
+#include <iostream>
+#include <string>
+
+int main() {
+    // 1. 指定下标和替换长度，使用 C 风格字符串替换
+    {
+        std::string str = "Hello Mars";
+
+        str.replace(6, 4, "World");
+
+        std::cout << str << '\n';  // Hello World
+    }
+
+    // 2. 指定下标和替换长度，使用 std::string 对象替换
+    {
+        std::string str = "Good night";
+
+        str.replace(5, 5, std::string("morning"));
+
+        std::cout << str << '\n';  // Good morning
+    }
+
+    // 3. 指定下标和替换长度，使用指定数量的相同字符替换
+    {
+        std::string str = "Wait?";
+
+        str.replace(4, 1, 3, '!');
+
+        std::cout << str << '\n';  // Wait!!!
+    }
+
+    // 4. 指定下标和替换长度，使用 C 风格字符串的前 n 个字符替换
+    {
+        std::string str = "I love tea";
+
+        str.replace(7, 3, "coffee beans", 6);
+
+        std::cout << str << '\n';  // I love coffee
+    }
+
+    // 5. 使用迭代器区间，替换为另一个字符串的指定区间
+    {
+        std::string str = "red fox";
+        std::string extra = "blue";
+
+        str.replace(str.begin(), str.begin() + 3, extra.begin(), extra.end());
+
+        std::cout << str << '\n';  // blue fox
+    }
+
+    // 6. 使用迭代器区间，替换为初始化列表中的字符
+    {
+        std::string str = "sunrise";
+
+        str.replace(str.begin() + 3, str.end(), {'s', 'e', 't'});
+
+        std::cout << str << '\n';  // sunset
+    }
+
+    return 0;
 }
 ```
 
-![image-20241014164133303](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141641407.png)
+```text
+[wind@ubuntu-asus build]$ ./main-debug
+Hello World
+Good morning
+Wait!!!
+I love coffee
+blue fox
+sunset
+[wind@ubuntu-asus build]$ 
+```
 
 ### 交换
 
@@ -534,6 +718,7 @@ void test7()
 
 ```cpp
 // 替换空格
+// 把 test8 换个名字
 std::string& test8(std::string& s, const char* c)
 {
 	auto p = new std::string;
@@ -561,9 +746,9 @@ int main()
 }
 ```
 
-![image-20241014170404304](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141704369.png)
+![image-20241014170404304](https://img.mdwind.online/md/202410141704369.png)
 
-但这样写有些多余，而且容易内存泄漏，能不能直接返回对象本身呢？
+但这样写有些多余，而且造成了内存泄漏，能不能直接返回对象本身呢？
 
 ```cpp
 // 替换空格
@@ -596,71 +781,123 @@ int main()
 }
 ```
 
-![image-20241014170950310](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141709424.png)
+![image-20241014170950310](https://img.mdwind.online/md/202410141709424.png)
 
 这里的`swap`可就有讲究了。
 
 我们知道，在C++中，有个通用交换模版。
 
-![image-20241014171353084](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141713273.png)
+![image-20241014171353084](https://img.mdwind.online/md/202410141713273.png)
 
 光就这模版来说，swap要深拷贝，所以对于容器来说，这种交换往往会非常低效。
 
 那我们上面调的是这个`swap`吗？我们看看模版`swap`的说明：
 
-![image-20241014171827908](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141718078.png)
+![image-20241014171827908](https://img.mdwind.online/md/202410141718078.png)
 
 第一段话说明了模版`swap`非常不适合容器的交换。第二段则说，对于所有特定的容器，`swap`都已经特定化地实现了，使得它们只交换少量指针，而不是真正地交换内容。
 
 我们看到`string`文档里，有两个`swap`，一个是成员函数，另一个是非成员函数，它们都不是实际内容的交换。而之前我们也说过，对于已经实现的函数，编译器不会再实例化出一个模版函数，所以我们上面调的就是`string`文档里的非成员函数`swap`，而不是由`swap`通用模版实例化出的模版函数。
 
-![image-20241014173220038](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141732204.png)
+![image-20241014173220038](https://img.mdwind.online/md/202410141732204.png)
 
 ```cpp
-void test9()
-{
-	std::string s1("hello worldtyuggvghgvvhvbghg");
-	std::string s2("hello linuxhgvvhyubgjhbjhkjij");
-	std::cout << &s1 << std::endl;
-	std::cout << &s2 << std::endl;
-	printf("%p\n", s1.c_str());
-	printf("%p\n", s2.c_str());
-	std::cout << "================" << std::endl;
-	s1.swap(s2);
-	std::cout << &s1 << std::endl;
-	std::cout << &s2 << std::endl;
-	printf("%p\n", s1.c_str());
-	printf("%p\n", s2.c_str());
+#include <cstdio>
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string s1("The stars outlive their names.");  // 星辰犹在，其名已湮。
+    std::string s2("Even ruins bloom again.");         // 废墟之上，仍有花开。
+    std::cout << "s1本身的对象地址: " << &s1 << std::endl;
+    std::cout << "s2本身的对象地址: " << &s2 << std::endl;
+    printf("s1字符串的原始地址: %p\n", s1.c_str());
+    printf("s2字符串的原始地址: %p\n", s2.c_str());
+    std::cout << "====================================" << std::endl;
+
+    s1.swap(s2);
+
+    std::cout << "s1本身的对象地址: " << &s1 << std::endl;
+    std::cout << "s2本身的对象地址: " << &s2 << std::endl;
+    printf("s1字符串的原始地址: %p\n", s1.c_str());
+    printf("s2字符串的原始地址: %p\n", s2.c_str());
+
+    return 0;
 }
+
 ```
 
-![image-20241017081426134](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410170814321.png)
+```text
+[wind@ubuntu-asus build]$ ./main-debug
+s1本身的对象地址: 0x7fffa70eec20
+s2本身的对象地址: 0x7fffa70eec08
+s1字符串的原始地址: 0x5c4fbcbc92a0
+s2字符串的原始地址: 0x5c4fbcbc92d0
+====================================
+s1本身的对象地址: 0x7fffa70eec20
+s2本身的对象地址: 0x7fffa70eec08
+s1字符串的原始地址: 0x5c4fbcbc92d0
+s2字符串的原始地址: 0x5c4fbcbc92a0
+[wind@ubuntu-asus build]$ 
 
-注意，VS的某些较高版本对交换逻辑进行了特殊优化。实际上，VS会动态分析深拷贝交换和索引交换的优劣，当字符串长度较短时，深拷贝交换代价将小于索引交换代价，此时VS会进行真正的值交换。比如下面的代码：
+```
+
+~~注意，VS的某些较高版本对交换逻辑进行了特殊优化。实际上，VS会动态分析深拷贝交换和索引交换的优劣，当字符串长度较短时，深拷贝交换代价将小于索引交换代价，此时VS会进行真正的值交换。比如下面的代码：~~
+
+注意, 对于某些平台来说, 为了避免很多小字符串开辟多个小空间, 造成内存碎片的增多, 其对于 string 中字符串本体的存储方式进行了特化: 
+
+为了提高短字符串的存储效率，`std::string` 通常采用小字符串优化（SSO），在对象内部设置一块固定大小的缓冲区。
+
+当字符串较短时，字符可以直接存储在这块缓冲区中，从而避免额外的堆内存分配；当字符串较长时，则使用独立的堆内存存储字符。
+
+这种设计也影响了 `swap` 的实现。对于使用堆内存的长字符串，由于资源与对象本身相对独立，可以通过交换指针及相关管理信息完成资源交换；而对于短字符串，字符直接存放在对象内部，无法简单地通过交换指针来转移资源，因此需要交换内置缓冲区中的数据。
+
+不过，内置缓冲区的容量是固定的，即使复制其中的数据，开销也很有限。因此，无论字符串长度如何，`swap` 都能够保持常数时间复杂度。
 
 ```cpp
-void test9()
-{
-	std::string s1("hello world");
-	std::string s2("hello linux");
-	std::cout << &s1 << std::endl;
-	std::cout << &s2 << std::endl;
-	printf("%p\n", s1.c_str());
-	printf("%p\n", s2.c_str());
-	std::cout << "================" << std::endl;
-	s1.swap(s2);
-	std::cout << &s1 << std::endl;
-	std::cout << &s2 << std::endl;
-	printf("%p\n", s1.c_str());
-	printf("%p\n", s2.c_str());
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string s1 = "Kingdoms fade.";  // 王朝已逝
+    std::string s2 = "Stars remain.";   // 群星依旧
+
+    const void* p1 = s1.data();
+    const void* p2 = s2.data();
+
+    s1.swap(s2);
+
+    std::cout << s1 << '\n';
+    std::cout << s2 << '\n';
+
+    std::cout << std::boolalpha;  // 要求以布尔形式输出
+    std::cout << (s1.data() == p1) << '\n';
+    std::cout << (s2.data() == p2) << '\n';
+    std::cout << std::noboolalpha;  // 取消特殊格式要求
+
+    return 0;
 }
+
 ```
 
-![image-20241017081833884](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410170818003.png)
+mscv 平台
+
+![](https://img.mdwind.online/img/20261102004356802.png)
+
+clang 平台
+
+```text
+[wind@ubuntu-asus build]$ ./main-debug
+Stars remain.
+Kingdoms fade.
+true
+true
+[wind@ubuntu-asus build]$ 
+```
 
 ### 查找
 
-![image-20241014175418328](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141754564.png)
+![image-20241014175418328](https://img.mdwind.online/md/202410141754564.png)
 
 查找文件后缀
 
@@ -674,64 +911,66 @@ void test10()
 }
 ```
 
-![image-20241014180318988](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141803118.png)
+![image-20241014180318988](https://img.mdwind.online/md/202410141803118.png)
 
 不过这样写还不行，因为有些文件名不止一个点。
 
 ```shell
-[wind@starry-sky ~]$ sudo ls /root
-[sudo] password for wind: 
-one  wind_backup.tar.gz
-[wind@starry-sky ~]$
+[wind@ubuntu-asus build]$ ls -al ~/Boost/
+total 200556
+drwxrwxr-x  3 wind wind      4096 11月  4  2025 .
+drwxr-x--- 34 wind wind      4096 11月  1 16:34 ..
+drwxr-xr-x 10 wind wind      4096 11月  4  2025 boost-1.89.0
+-rw-rw-r--  1 wind wind 134857488 11月  4  2025 boost-1.89.0-cmake.tar_2.gz
+-rw-rw-r--  1 wind wind  70491419 11月  4  2025 boost-package-1.89.0.tar.gz
+[wind@ubuntu-asus build]$ 
 ```
-
-`wind_backup.tar.gz`是我这个账号的备份，因为不久之前，我这个账号不知道怎么回事，有些配置出问题了，然后就注销了这个用户，现在这个是新创建了，于是就把这个新账号整个备份了一个。
 
 `.tar`是打包，`.gz`是压缩，真正的后缀是`.gz`，这时，就要用`rfind`了，它是倒着找的，不是从前往后找的。
 
-![image-20241014181502306](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141815141.png)
+![](https://img.mdwind.online/img/20261102005816827.png)
+
+
 
 网址分类：协议，域名，资源名。比如`https://cplusplus.com/reference/string/string/find/`，其中`https`是协议，`cplusplus.com`是域名，`reference/string/string/find/`是资源名。
 
 ```cpp
-void test11()
-{
-	std::string s("https://cplusplus.com/reference/string/string/find/");
-	size_t n = s.find(':');
-	if (n != std::string::npos)
-	{
-		auto i = s.substr(0, n);
-		std::cout << i << std::endl;
-	}
-	else
-	{
-		std::cout << "URL error!" << std::endl;
-	}
-	// 第二个参数规定了查找的起始位置，缺省值为0
-	size_t m = s.find('/', n + 3);
-	if (m != std::string::npos)
-	{
-		auto j = s.substr(n + 3, m - (n + 3));
-		std::cout << j << std::endl;
-	}
-	else
-	{
-		std::cout << "URL error!" << std::endl;
-	}
-	n = s.find('/', m + 1);
-	if (n != std::string::npos)
-	{
-		auto k = s.substr(m + 1);
-		std::cout << k << std::endl;
-	}
-	else
-	{
-		std::cout << "URL error!" << std::endl;
-	}
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string url("https://legacy.cplusplus.com/reference/string/string/find/");
+    size_t n = url.find(':');
+    if (n != std::string::npos) {
+        auto scheme = url.substr(0, n);
+        std::cout << "协议种类: " << scheme << std::endl;
+    } else {
+        std::cerr << "url 存在错误" << std::endl;
+    }
+
+    // 第二个参数规定了查找的起始位置, 缺省值为0
+    size_t m = url.find('/', n + 3);
+    if (m != std::string::npos) {
+        auto hostname = url.substr(n + 3, m - (n + 3));
+        std::cout << "域名: " << hostname << std::endl;
+    } else {
+        std::cerr << "url 存在错误" << std::endl;
+    }
+
+    n = url.find('/', m + 1);
+    if (n != std::string::npos) {
+        auto path = url.substr(m + 1);
+        std::cout << "资源路径: " << path << std::endl;
+    } else {
+        std::cerr << "url 存在错误" << std::endl;
+    }
+
+    return 0;
 }
+
 ```
 
-![image-20241014193442128](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141934278.png)
+![](https://img.mdwind.online/img/20261102012307010.png)
 
 ------------------
 
@@ -755,7 +994,7 @@ void test12()
 }
 ```
 
-![image-20241014194528323](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410141945451.png)
+![image-20241014194528323](https://img.mdwind.online/md/202410141945451.png)
 
 它找的不是第一个参数那个字符串，而是第一个参数里出现的所有字符，可以指定查找的起始位置。
 
@@ -763,19 +1002,19 @@ void test12()
 
 `not`是找补集，找没有出现在第一个参数的
 
-![image-20241014200619394](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142006014.png)
+![image-20241014200619394](https://img.mdwind.online/md/202410142006014.png)
 
 ### getline
 
 为了对多个对象进行流提取，C++在默认情况下会把输入的信息以空格或者换行作为分隔符。
 
-![image-20241014205544600](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142055254.png)
+![image-20241014205544600](https://img.mdwind.online/md/202410142055254.png)
 
 在上述的代码中，我们输入了"hello world"，编译器将这两个单词间的空格视为了分隔符，于是`s`只提取到了`hello`，而`world`仍旧处于缓冲区中。
 
 这对多个对象的流提取无疑是有益的，但若是想把包括空格的一句话提取到一个对象中，这种机制就有问题了。
 
-![image-20241014205911517](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142059444.png)
+![image-20241014205911517](https://img.mdwind.online/md/202410142059444.png)
 
 为此，我们有了`getline`，`getline`有两个版本：
 
@@ -786,8 +1025,6 @@ istream& getline (istream& is, string& str);
 
 第一个版本中的第三个参数`delim`描述了遇到什么字符才会停止提取，第二个版本则会把整行内容全部提取。
 
-![image-20241014210659512](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410142107482.png)
-
-
+![image-20241014210659512](https://img.mdwind.online/md/202410142107482.png)
 
 # 完
