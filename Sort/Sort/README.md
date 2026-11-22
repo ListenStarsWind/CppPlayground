@@ -1,5 +1,125 @@
 #  排序
 
+## 从数组函数到泛型算法
+
+在实现排序之前，先看一个更简单的问题：从一组整数中找出最大值。我们把第一个元素记作当前结果，再依次查看后面的元素。遇到更大的元素，就更新当前结果。
+
+如果把整数换成浮点数，这套步骤仍然适用。如果把数组换成链表，我们也可以沿着链表逐个访问元素。再换成一组学生记录，按数学成绩和按英语成绩选出的最高分可能来自不同的学生，但查找的步骤依然相同。
+
+先用 C 写一个接收数组指针和长度的函数。下面的几个版本都从第一个元素取得初始结果，因此要求传入的区间非空。
+
+```c
+#include <stddef.h>
+
+int max_value(const int* arr, size_t n) {
+    int result = arr[0];
+
+    for (size_t i = 1; i < n; ++i) {
+        if (result < arr[i]) {
+            result = arr[i];
+        }
+    }
+
+    return result;
+}
+```
+
+假如现在要处理 `double` 数组，我们可以照着再写一个函数。逐个访问、比较、更新结果，这些步骤都一样，变化的只有元素类型。在 C++ 中，可以用函数模板把这个类型留作参数。
+
+```cpp
+#include <cstddef>
+
+template <class T>
+T max_value(const T* arr, std::size_t n) {
+    T result = arr[0];
+
+    for (std::size_t i = 1; i < n; ++i) {
+        if (result < arr[i]) {
+            result = arr[i];
+        }
+    }
+
+    return result;
+}
+```
+
+传入 `int` 数组时，编译器可以从参数推导出 `T` 是 `int`；传入 `double` 数组时，`T` 就是 `double`。这样，相同的处理步骤只需要写一遍，由编译器根据实际使用的类型实例化对应的函数。
+
+接下来考虑链表。前两个版本都通过 `arr[i]` 访问元素，但查找最大值的过程中，我们每次只需要读出当前元素，再走到下一个位置。数组可以用指针完成这两步，链表则可以用它自己的迭代器完成。于是，函数可以接收区间的起点 `first` 和终点 `last`，通过 `*first` 读取元素，用 `++first` 前进。
+
+```cpp
+#include <iterator>
+
+template <std::input_iterator It>
+std::iter_value_t<It> max_value(It first, It last) {
+    std::iter_value_t<It> result = *first;
+
+    for (++first; first != last; ++first) {
+        if (result < *first) {
+            result = *first;
+        }
+    }
+
+    return result;
+}
+```
+
+这里使用 `std::iter_value_t<It>` 取得迭代器对应的元素类型，`result` 保存的是当前最大元素的值。这个例子使用同类型、可以相互比较的迭代器表示区间两端。数组指针和 `std::list` 的迭代器都可以按这种方式传入。
+
+元素类型和访问方式已经交给了调用者，比较规则还写在函数里的 `<` 上。假设用这个函数查找学生成绩，今天想找数学最高分，明天想找英语最高分。两次查找的循环完全一样，变化的只是比较时看的那一项。于是，我们把这一步也交给调用者，用 `comp(a, b)` 表示按当前规则，`a` 是否排在 `b` 前面。
+
+```cpp
+template <std::input_iterator It, class Compare>
+std::iter_value_t<It> max_value(It first, It last, Compare comp) {
+    std::iter_value_t<It> result = *first;
+
+    for (++first; first != last; ++first) {
+        if (comp(result, *first)) {
+            result = *first;
+        }
+    }
+
+    return result;
+}
+```
+
+普通函数也可以作为比较器传入。这里再看一种 C++ 写法：给类重载函数调用运算符 `operator()`，这样它的对象就可以写成 `comp(a, b)`。这种对象通常叫作**仿函数**。
+
+```cpp
+struct Student {
+    int math;
+    int english;
+};
+
+struct CompareBySubject {
+    bool use_math;
+
+    bool operator()(const Student& lhs, const Student& rhs) const {
+        if (use_math) {
+            return lhs.math < rhs.math;
+        }
+
+        return lhs.english < rhs.english;
+    }
+};
+
+Student students[] = {{96, 82}, {88, 97}, {91, 89}};
+
+const auto best_at_math =
+    max_value(students, students + 3, CompareBySubject{true});
+
+const auto best_at_english =
+    max_value(students, students + 3, CompareBySubject{false});
+```
+
+这两次调用传入的是**同一种仿函数类型**，只是对象保存的状态不同。第一次找到数学得分为 96 的学生，第二次找到英语得分为 97 的学生。查找函数只负责在遍历中比较并更新结果，比较器负责决定这次看哪一科。
+
+这和前面实现 `vector` 时的设计思路相通。`vector` 通过 `allocator_traits` 使用空间配置器，查找算法通过迭代器访问元素，通过比较器判断顺序。各部分通过约定好的操作协作，因此换一种访问方式或比较规则时，查找步骤可以原样复用。接下来实现排序时，也可以沿用这个分工：**算法决定何时比较、何时移动元素，比较器决定两个元素的先后顺序。**
+
+----->>>
+
+这段将会被舍去
+
 ## 排序的相关概念
 
 排序：所谓排序，就是使一串记录，按照其中的某个或某些关键字的大小，递增或递减的排列起来的操作。
@@ -13,7 +133,101 @@
 
 在接下来的学习过程中，我们将会遇到许多排序算法，这些排序算法各有各的优缺点，也因此应用于不同的场景。
 
+---->>>
+
 ### 冒泡排序
+
+在冒泡排序的每一轮中，可以用右边界 `end` 将整个序列划分为两部分：左侧是本轮仍需扫描的**待排序区**，右侧是后续轮次会跳过的**已归位区**。为了方便观察，下面用数组来演示。
+
+![](https://img.mdwind.online/img/20261119021107902.gif)
+
+从动图中可以看到，每轮冒泡排序都从待排序区的左端开始，依次比较相邻的两个元素。如果它们的先后顺序与排序规则相反，就交换它们，然后继续比较下一对。以升序为例，每次比较后，两个元素中较大的那个会留在右侧，并参与下一次比较。这样一路比下去，待排序区的最大元素就会留在本轮的最后一个位置。它已经归位，下一轮只需将右边界左移一格，就可以跳过它。
+
+还可以做一个小优化。如果一整轮都没有发生交换，说明待排序区中的每对相邻元素都符合排序规则，整个待排序区已经有序。此时可以直接结束排序。
+
+下面让我们看看代码, 有些语法细节需要注意
+
+![](https://img.mdwind.online/img/20261119023211775.png)
+
+```cpp
+#pragma once
+
+#include <iterator>
+
+#include "operations.hpp"
+
+namespace wind {
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void bubble_sort(It first, It last, Compare cmp = {}) {
+    for (auto end = last; first != end; --end) {
+        bool swapped = false;
+
+        auto left = first;
+        auto right = left;
+        ++right;
+
+        for (; right != end; ++left, ++right) {
+            if (cmp(*left, *right)) {
+                std::ranges::iter_swap(left, right);
+                swapped = true;
+            }
+        }
+
+        if (!swapped) {
+            break;
+        }
+    }
+}
+}  // namespace wind
+
+```
+
+为了让迭代器一方面可以向后迭代, 一方面可以让已归位区的左边界不断向前, 迭代器起码应该是一个双向迭代器(支持自++, 自--)(另外要注意双向迭代器不一定支持 it + 1 和 it - 1 )
+
+如果从读取和遍历能力的角度来划分, C++有四种迭代器, 并且在 C++20 , 他们都引入了对应的概念
+
+| 迭代器类型     | C++20 概念                        | 核心能力                                        |
+| -------------- | --------------------------------- | ----------------------------------------------- |
+| 输入迭代器     | `std::input_iterator<It>`         | 读取元素、向前推进，允许单遍遍历                |
+| 前向迭代器     | `std::forward_iterator<It>`       | 在输入迭代器基础上支持多遍遍历                  |
+| 双向迭代器     | `std::bidirectional_iterator<It>` | 增加 `--it`、`it--`                             |
+| 随机访问迭代器 | `std::random_access_iterator<It>` | 增加 `it + n`、`it - n`、`it[n]` 等随机访问能力 |
+
+注意:  我们把沿着容器的正常遍历顺序移动到下一个元素的行为叫作"向前推进", 比如 {1, 2, 3, 4, 5}, 中 1->2, 2->3 这种, ++it, 不过在一般语境下, 我们常把索引增大称为"向后遍历", 但是用迭代器的专业术语的话, 这其实是在向前走, 与之相反的, 移动到上一个元素的方向, 称之为"向后退回", --it, 一般语境下, 常被叫作"向前遍历". 我们的习惯说法和迭代器专业术语的方向形容词是倒过来的. 
+
+除此之外, 这四种迭代器还是一个递进关系.. 下面三个必然满足输入迭代器的条件, 因此他们也是输入迭代器, 后两个也必然满足前向迭代器的条件, 所以他们也是前向迭代器.... 所以我说"起码", 意思是双向迭代器是最低要求, 随机访问迭代器也可以完全匹配.
+
+另一个模板参数约束条件是`std::indirectly_swappable<It, It>`, 他要求两个迭代器可以对所指向的逻辑元素进行交换, 也就是之后的`std::ranges::iter_swap`, 其实如果你写`std::swap(*left, *right)`也几乎没什么问题...`std::ranges::iter_swap`的使用是为了防止一些特殊情况: 在极小概率情况下, 迭代器解引用出的元素并不是底层真正存储的数据, 但读起来效果一样, 我们这种情况叫作"代理引用". 一个典型的例子是`std::vector<bool>`, 我们知道, bool 类型理应占据一个字节空间, 但实际上, 由于仅靠两种状态(1个比特位)就可以表达出布尔的所有情况, 因此, 标准库对于 `vector<bool>` 进行了模板特化, 多个布尔值可能存在同一个字节里面, 这时候无法通过解引用来进行元素交换, 但是仍旧可以通过 `std::ranges::iter_swap`, 来对两个迭代器所指向的元素进行交换. 
+
+另外, 我们的函数模板参数对于比较器类型采用了缺省, 默认使用大于--标准库默认用的也是大于, 这样最后就得到一个升序序列.
+
+之后是测试, 我也没有专门学过测试, 我也不想写测试代码, 所以我让 AI 去做了, 据 GPT-6.2 Sol 所说, 他测了这些东西
+
+| 测试                 | 验证内容                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| 默认升序             | `[1, 3, 2]` 排成 `[1, 2, 3]`。第一对无需交换，仍要继续处理后面的元素，专门防止提前退出写进内层循环。      |
+| 子区间降序           | 只对 `[90, 2, 1, 3, 80]` 的中间三项排序，结果为 `[90, 3, 2, 1, 80]`，两端元素保持原位。                   |
+| 双向迭代器与稳定性   | 对 `std::list` 中的记录按键排序，`2A, 1B, 2C, 1D` 应变成 `1B, 1D, 2A, 2C`。键相同的记录保持原有相对顺序。 |
+| 整轮无交换时提前退出 | 五个已经升序的元素只调用比较器四次，正好扫完一轮。                                                        |
+| 空区间与单元素       | 两种调用都不触发比较，单元素值保持原样。                                                                  |
+
+测试结果看起来没什么问题
+
+```bash
+[wind@ubuntu-asus build]$ ctest -R '^test_bubble_sort$' --output-on-failure
+Test project /home/wind/CS-Rebuild/04-CPP-Language-Basics/sort/build
+    Start 1: test_bubble_sort
+1/1 Test #1: test_bubble_sort .................   Passed    0.11 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.16 sec
+[wind@ubuntu-asus build]$ vim ../tests/CMakeLists.txt 
+[wind@ubuntu-asus build]$
+```
+
+
 
 冒泡排序将数组分为两个部分：比较区和保护区。比较区负责存储将要比较的数据，保护区负责存储已经排完序的数据。比较区的每轮比较，将会从数组首元素开始，接着，将两两相邻元素进行比较，从而将比较区的极值移至比较区末尾；在比较区比完一轮后，比较区的最后一个元素就会并入保护区，随后进行下一轮比较。
 
@@ -182,9 +396,81 @@ int main()
 
 ### 插入排序
 
+
+
+**插入排序演示（相邻交换版）**
+
+以 `[2, 4, 1, 3]` 为例，观察 `start` 如何标记本轮起点，以及 `curr` 如何跟着待插入的元素向左移动。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261119042621799.mp4"></video>
+
+[打开图床视频](https://img.mdwind.online/img/20261119042621799.mp4)
+
+https://github.com/user-attachments/assets/11d349e6-91a6-40e3-aa19-9d7a73b6b5aa
+
+
+
+
+
 插入排序的主题思想是将要排序的值依据相对大小关系插入到一个已经有序的结构中。由于单个元素是无法比较的，所以单个成员就可以视为有序的结构，所以插入排序最开始是将首元素作为那个有序结构，随后在此基础上，对剩余元素逐个插入。插入排序分为两种：连续型和离散型。
 
 我们先说连续型，也叫直接插入排序。
+
+
+
+可以看到, 相比后面的 C 代码来说, 这里的 C++ 代码还更加精巧一些
+
+```cpp
+#pragma once
+
+#include <iterator>
+
+#include "operations.hpp"
+
+namespace wind {
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void insert_sort(It first, It last, Compare cmp = {}) {
+    if (first == last) return;
+
+    auto start = first;
+    ++start;
+    for (; start != last; ++start) {
+        auto curr = start;
+        while (curr != first) {
+            auto prev = curr;
+            --prev;
+
+            if (cmp(*prev, *curr)) {
+                std::ranges::iter_swap(prev, curr);
+                curr = prev;
+                continue;
+            }
+            break;
+        }
+    }
+}
+}  // namespace wind
+
+```
+
+
+
+C代码的思路是先拷贝一份比较区的首元素, 然后再往前面一个个比较, 不符合规则, 往后挪动一位. 而在 C++ 这里, 我们直接通过交换的方式来改变他们之间的原有顺序. 
+
+另外, 还有一些小的语法细节, 需要注意: `start`表示比较区的首元素, 而第一个首元素, 就像我们上面说的那样--单个元素无法比较, 所以天然是有序的, 因此, 这里我们在进入循环之前, 就自加一下, 但这样也会出现一个新的问题: 假设这是一个空区间, 直接一加, 就跳过 `last` 了, 然后就变成死循环了, 所以在最开始我们需要判断一下是不是空区间.
+
+另外要注意的小点是, 双向迭代器只支持 ++ 或者 -- 不支持 + 或者 -, 所以你不能用 + 1 或者 -1 的方式先有 `prev` 再有 `curr`, 或者先有 `curr` 再有 `prev`, 另外要注意的一点是, 如果你选择前者, 即 `prev = start; curr = prev; ++curr;`, 最后会让 `curr`跑到 `last` 上面, 所以我们这里用的是后者.
+
+如果顺序是错误的, 那就进行交换, 更新 `curr`, 让其与有序区的上一个位置继续进行比较, 当 `curr` 变为 `first` 时, 循环自动结束, 并且, 上一轮的内循环中, 已经通过交换把他放在了 `first`, 所以不需要做更多处理. 
+
+
+
+
+
+
+
+
 
 ![动画](https://img.mdwind.online/md/202409021314164.gif)
 
@@ -270,8 +556,6 @@ int main()
 
 所以对于直接插入排序来说，除了要知道我们通常说的最坏情况的时间复杂度之外，还要知道最好情况的复杂度，什么时候复杂度最好呢？观看上面的动图你可以发现，有些首元素被拷贝之后，直接就被放回了原位，如果每次比较都是这种情况，那就是最好情况。此时直接插入排序的时间复杂度就为$O(N)$，和最坏情况一样，这种级别的复杂度也很难遇到，遇到这种级别的复杂度，意味着，输入的数组就是顺序数组。
 
-
-
 虽然冒泡排序和直接插入排序的时间复杂度（通常说的那个时间复杂度）都是$O(N^2)$，但直接插入排序优于冒泡排序。设想这样一种场景：现在需要将输入的数组转化为升序数组，但恰巧数组第一个元素就是最大值，很明显要把这个最大的元素移到最后一位。对于这种数组，直接插入每轮比较都顺手把这个最大的值向后移动一位，每轮比较都是有配合的；而对于冒泡排序来说，各轮比较像是各干各的，每轮比较只负责把极值推到最后。
 
 ---------
@@ -285,6 +569,230 @@ int main()
 预排序的具体做法是将原先排序的数组，分为独立的几个部分，这几个独立数组中的成员在原先数组中并不是连续的，而是相隔一定单位的，随后在对这些独立的数组分别进行直接插入。
 
 这里我们暂且将“一定单位”设为3。
+
+
+
+
+
+**希尔排序演示（按下标依次插入）**
+
+当 `gap = 3` 时，把序列按每行三个元素排开，同一列的元素相隔三步。`start` 按原数组下标依次前进，每完成一次插入，当前列的有序前缀就向下延伸一格。绿色下沿逐格形成阶梯，等整行处理完毕，三列才重新对齐。步长缩到 `1` 后，整个序列进行一趟直接插入排序。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261121154503702.mp4"></video>
+
+[打开图床视频](https://img.mdwind.online/img/20261121154503702.mp4)
+
+https://github.com/user-attachments/assets/12b65ba9-beb6-4e9d-8bce-2a08d7db398c
+
+
+
+
+
+```cpp
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void shell_sort1(It first, It last, Compare cmp = {}) {
+    using difference_type = std::iter_difference_t<It>;
+
+    for (difference_type gap = 3; gap > 0; gap /= 2) {
+        auto start = first;
+        std::ranges::advance(start, gap, last);
+        for (; start != last; ++start) {
+            auto curr = start;
+            auto prev = curr;
+            while (!std::ranges::advance(prev, -gap, first)) {
+                if (cmp(*prev, *curr)) {
+                    std::ranges::iter_swap(prev, curr);
+                    curr = prev;
+                    continue;
+                }
+                break;
+            }
+        }
+    }
+}
+```
+
+
+
+这里要注意一些语法上的小细节: 在之前, 我们说过, 双向迭代器是不支持 + 1, -1 这种操作的, 更不用说, + n, - n, 但这并不是说我们完全达不到类似的效果, 这里我们用的是 `std::ranges::advance`, 第一个参数是需要变动的迭代器, 第二个是偏移量, 支持负数, 第三个是边界: 他到边界上会自动停下来, 不再迭代器, 他会返回省下还未走完的偏移量, 如果都走完了, 返回0, 如果设定偏移量是 -3, 只走了"两步", 那么返回 -1, 同样的, 设定为 3, 走"一步", 返回 2. 
+
+偏移量的类型使用的是迭代器的偏移量类型. 
+
+从外向里, 第一个循环负责改变 gap 的值, 缩小预排序的间隔, 最终演变为普通的插入排序; 第二层循环, 负责从第二行开始, 从左往右, 从上到下, 依次遍历. 第三个循环, 负责以列的视角, 将当前的元素插入到原来的有序序列中
+
+
+
+
+
+
+
+
+
+
+
+**希尔排序演示（逐列插入版）**
+
+先看 `gap = 3` 时的分组。`start` 指向当前列的列首，`compare_begin` 每次向后跨 `gap` 步，选出下一个待插入元素。若比较后发生交换，`curr` 就跟着该元素沿本列向上移动。排完一列再处理下一列，最后用 `gap = 1` 做一轮普通插入排序。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261121161537017.mp4"></video>
+
+[打开图床视频](https://img.mdwind.online/img/20261121161537017.mp4)
+
+https://github.com/user-attachments/assets/5a077d75-0016-4f8e-950f-68afd8134553
+
+
+
+ 
+
+```cpp
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void shell_sort2(It first, It last, Compare cmp = {}) {
+    using difference_type = std::iter_difference_t<It>;
+
+    for (difference_type gap = 3; gap > 0; gap /= 2) {
+        auto start = first;
+        auto finish = start;
+        std::ranges::advance(finish, gap, last);
+        if (finish == last) continue;
+        for (; start != finish; ++start) {
+            auto compare_begin = start;
+            while (!std::ranges::advance(compare_begin, gap, last) && compare_begin != last) {
+                auto curr = compare_begin;
+                auto prev = curr;
+                while (!std::ranges::advance(prev, -gap, start)) {
+                    if (cmp(*prev, *curr)) {
+                        std::ranges::iter_swap(prev, curr);
+                        curr = prev;
+                        continue;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+```
+
+
+
+这一版, 想起来更加直观, 但是代码写起来有些琐碎, 平常大家更喜欢用上一版的思路.
+
+
+
+-----
+
+
+
+尽管这两种写法的循环层数不同，但它们的核心思想是一致的，只是从不同的角度去实现希尔排序。
+
+不过，上述代码并非希尔排序的极限。
+
+我们可以看到，希尔排序的核心思想，是通过较大间隔的预排序，为之后较小间隔的预排序减轻负担。因此，当待排序元素较多时，如果一开始就将间隔设定为 3，间隔变化得可能过于迅速，后续间隔为 3 的预排序仍然需要承担较大的工作量。
+
+所以，如果想进一步提高希尔排序的效率，就需要根据待排序元素的数量，动态调整间隔，使其按照更加合理的阶梯逐步下降。
+
+但这需要建立在一个条件上，那就是使用随机访问迭代器区间来表示待排序的元素序列。
+
+或许，你的第一反应是：这样做是因为随机访问迭代器支持直接相减，可以快速得到待排序元素的数量。但这并不是主要原因。更重要的是，随机访问迭代器往往对应着能够提供较好数据访问局部性的数据结构，因此也往往更有利于提高 CPU 缓存命中率。
+
+这里有必要了解一下计算机的存储层次。计算机采用分层存储结构，距离 CPU 越近的存储部件，读写速度通常越快，但单位存储容量的成本也越高。例如，CPU 内部的寄存器和高速缓存（Cache），访问速度远高于主存（内存），而主存又远快于 SSD 和机械硬盘。
+
+CPU 在执行程序时，如果需要的数据已经存在于高速缓存中，就可以直接从缓存获取；如果缓存中没有，就需要从更低层次的存储中读取，产生额外的访问开销。因此，缓存命中率会直接影响程序的实际运行效率。
+
+这也引出了局部性原理：程序在访问数据时，往往倾向于在较短时间内重复访问已经使用过的数据，或者访问与当前数据位置相邻的数据。合理的数据访问模式能够提高缓存命中率，从而减少 CPU 等待数据的时间。
+
+因此，我们不能只看算法的理论复杂度。理论复杂度描述的是算法运算量随数据规模增长的趋势，而实际运行效率还受到数据布局、访问模式以及缓存命中率等因素的影响。即使两个实现的理论效率相近，它们在实际运行中也可能表现出不同的性能。
+
+
+
+-----
+
+
+
+
+
+代码也是很好写, 上述我们用的那些接口, 比如 `std::ranges::advance` 或者 `std::ranges::iter_swap`, 他们是泛型编程接口, 完全不需要变, 我们只需要在外面套层间隔动态变化的循环就行了
+
+
+
+```cpp
+template<std::random_access_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void shell_sort(It first, It last, Compare cmp = {}){
+    using difference_type = std::iter_difference_t<It>;
+
+    difference_type size = last - first;
+      for (difference_type gap = size / 2; gap > 0; gap /= 2) {
+        auto start = first;
+        std::ranges::advance(start, gap, last);
+        for (; start != last; ++start) {
+            auto curr = start;
+            auto prev = curr;
+            while (!std::ranges::advance(prev, -gap, first)) {
+                if (cmp(*prev, *curr)) {
+                    std::ranges::iter_swap(prev, curr);
+                    curr = prev;
+                    continue;
+                }
+                break;
+            }
+        }
+    }
+}
+```
+
+
+
+这里我们用的是除 2 这种间隔迭代公式: 如果个数是偶数, 最后都会除出 2, 这样就可以得到 1, 如果是奇数, 也没什么问题, C/C++ 除法向下取整, 所以其实上和一开始为偶数没什么区别.
+
+
+
+关于时间复杂度: 我不知道你们有没有之前有没有接触过时间复杂度这个词, 但是我可以确定的是, 我之前没在我的公开文章里讲过, 所以我这里略微说一下, 
+
+> [!NOTE]
+>
+> 时间复杂度（Time Complexity）用于描述一个算法的执行效率随输入规模增长而发生的变化。它关注的不是算法实际运行了多少秒，而是当处理的数据量不断增加时，算法所需要执行的操作次数会如何增长。
+>
+> 通常使用大 O 表示法（Big O Notation）描述时间复杂度，例如：
+>
+> - \(O(1)\)：常数时间，执行次数不随数据量变化。
+> - \(O(n)\)：线性时间，数据量增加多少倍，执行次数也相应增加。
+> - \(O(n^2)\)：平方时间，执行次数随数据量的平方增长。
+> - \(O(\log n)\)：对数时间，数据量增长时，执行次数增长得相对缓慢。
+>
+> 时间复杂度主要用于分析和比较算法在不同输入规模下的效率，帮助我们判断算法能否适应更大规模的数据。需要注意的是，时间复杂度反映的是增长趋势，而不是实际运行时间；即使两个算法具有相同的时间复杂度，实际运行效率也可能存在差异。
+
+
+
+时间复杂度在不同语境下有着不同的评判标准, 通常是指算法在最坏情况下随着输入规模增长的情况.
+
+对于常规的插入排序来说, 最坏的情况就是每次从比较区里拿出的第一个元素, 参与有序区的比较, 最后都是比完, 放到第一个位置的情况, 这样运算级别就相当于是一个等差数列, 等差数列的和是 $N^2$ 级别, 所以普通插入排序就在这里
+
+
+
+
+
+### 希尔排序的时间复杂度
+
+这里分析的是按序列长度选择间隔的版本。第一次取 `gap = n / 2`，之后每轮将间隔减半，直到 `gap = 1`。
+
+**最好情况**可以从一个已经有序的序列看起。间隔为 \(g\) 时，前 \(g\) 个元素各自是所在组的第一个元素，外层循环从第 \(g\) 个下标开始，一共访问 \(n-g\) 个位置。每个位置只比较一次就能确定当前元素已经在正确的位置上，因此这一轮恰好比较 \(n-g\) 次，没有交换。由于 \(g\) 最大也只有 \(n/2\)，每轮仍要做线性数量的比较。间隔每轮减半，一共有 \(\lfloor\log_2 n\rfloor\) 轮，所以最好时间复杂度是 \(\Theta(n\log n)\)。
+
+**最坏情况**可以先逐轮估算。间隔为 \(g\) 时，一共有 \(g\) 组，每组约有 \(n/g\) 个元素。每组做一次普通插入排序，因此这一轮最多要做 \(O(g(n/g)^2)=O(n^2/g)\) 的工作。把间隔倒过来看，从 \(1\) 开始至少每轮翻倍，各轮开销之和可以用 \(n^2+n^2/2+n^2/4+\cdots\) 来估算，总上界仍是 \(O(n^2)\)。
+
+这个二次上界确实能达到。以 `5, 1, 6, 2, 7, 3, 8, 4` 为例，`gap = 4` 和 `gap = 2` 的两轮只在同为奇数或同为偶数的下标之间比较，而这两组各自已经有序，所以预排序一次交换都没有。直到 `gap = 1`，最后一轮才开始处理大数在前、小数在后的逆序，相当于直接对原序列做普通插入排序。把这种排列推广到长度为 2 的幂的序列，就能在最后一轮留下 \(\Theta(n^2)\) 个逆序。
+
+希尔排序的优化体现在**较大的间隔能让元素一次跨过多个位置，提前消除一些原本需要多次相邻交换才能消除的逆序**。比如 `5, 6, 7, 8, 1, 2, 3, 4`，普通插入排序需要 16 次相邻交换，而希尔排序在 `gap = 4` 时交换 4 次，整个序列就已经有序了。实际能省下多少工作，取决于输入的排列和选用的间隔序列。上面两个极端能说明这版实现的最好情况和最坏情况，具体能优化到什么量级，还得针对所选的间隔序列和要分析的情况进一步推导。
+
+
+
+
+
+
+
+
 
 ![动画](https://img.mdwind.online/md/202409031322975.gif)
 
@@ -412,6 +920,18 @@ void Shell_sort(pSortData pArray, int Size)
 	}
 }
 ```
+
+
+
+C++ 化后遇不到这些问题, 所以我们就删除他们吧.
+
+
+
+
+
+
+
+
 
 `intervals`在其中的迭代公式为`intervals = intervals / 3 + 1;`它的思路是通过不断地整除三让`intervals`变小，最终让`intervals`小于三，此时加一就发挥了作用，它会使得`intervals`最终变成一，在执行完间隔为1的希尔排序后，借由`while (intervals > 1)`跳出循环，完成排序。
 
@@ -1207,15 +1727,15 @@ void Merge_sort(pSortData pArray, int Size)
 }
 ```
 
- ```c
- PerformanceTesting(10, Merge_sort)
- 
- int main()
- {	
- 	test_Merge_sort();
- 	return 0;
- }
- ```
+```c
+PerformanceTesting(10, Merge_sort)
+
+int main()
+{	
+	test_Merge_sort();
+	return 0;
+}
+```
 
 ![image-20240911104406653](https://img.mdwind.online/md/202409111044774.png)
 
@@ -1527,6 +2047,4 @@ int main()
 
 冒泡是稳定的，对于相同的数值，不会进行交换；直接插入排序是稳定的，对于数值相同的项，我们是写在有序区后一位的；希尔排序只能保证子数组的稳定性，但整体稳定性就无法保证了；选择排序我就不分析了，直接举个反例：已知在数组中现有四个数：$A_1 A_2; B_1 B_2$,已知$A>B$，其中$A_1$是数组首元素，$A_2$夹在$B_1$和$A_1$之间；$A_2$在$A_1$之后，为了方便考虑，我们每轮就找一个极值，最小值；现在假设，$B$恰好即使是最小的那个值，于是在第一轮寻找中，$A_1$就会和$B_1$交换位置，这样，$A_1$就会在$A_2$后了，换言之，稳定性被破坏了；堆排序也不稳定，比如，现在要建一个小堆，根节点和左节点数值相同，根节点大于右节点，这样一交换，稳定性就被破坏了；快排不稳定，即使不考虑三数取中，它也是不稳的，当有两个比基准值大的相同值时，就不稳定了；归并，要看具体代码，比如在上面的代码中，如果等于，先写入的确实是`begin1`，所以是稳定的，如果else分支里写的是`begin2`那就不稳了，此时若要稳定，就需要在条件判断里加个等于号，不过由于这里的比较函数设计有缺陷，所以要仿照霍尔排序的那种取反来写。
 
-
-
-# 完 
+# 完
