@@ -985,6 +985,133 @@ int main()
 
 ### 选择排序
 
+
+
+**双向选择排序演示（边扫描边交换）**
+
+以 `[6, 2, 8, 4, 9, 1, 3]` 为例。每轮先比较待排序区的两端，必要时交换，再让 `scan` 从左向右扫描。遇到应该排得更靠前或更靠后的元素，就当场交换到对应的一端。扫描结束后，两端归位，下一轮继续处理剩下的区间。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261122100359579.mp4"></video>
+
+[打开图床视频](https://img.mdwind.online/img/20261122100359579.mp4)
+
+https://github.com/user-attachments/assets/f36fdd0f-a9b6-46c5-8eb9-675b00c2ca28
+
+
+
+
+
+选择排序将序列分成已归位区和待排序区。每一轮扫描待排序区，找出按目标顺序应该排在最前面的元素，把它放到待排序区的左端。这个元素从此归位，下一轮只需处理剩下的元素。
+
+而在这里, 我们使用了一个小优化: 将其变为双向选择排序, 双向选择排序沿用同一个思路，只是每轮同时选出应该排在最前面和最后面的元素，让它们分别在两端归位。待排序区也就从两端向中间逐步缩小。
+
+
+
+```cpp
+#pragma once
+
+#include <iostream>
+
+#include "operations.hpp"
+
+namespace wind {
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void selection_sort(It first, It last, Compare cmp = {}) {
+    while (first != last) {
+        --last;
+
+        if (first == last) break;
+
+        if (cmp(*first, *last)) {
+            std::ranges::iter_swap(first, last);
+        }
+
+        for (auto scan = std::next(first); scan != last; ++scan) {
+            if (cmp(*first, *scan)) {
+                std::ranges::iter_swap(first, scan);
+            } else if (cmp(*scan, *last)) {
+                std::ranges::iter_swap(scan, last);
+            }
+        }
+
+        ++first;
+    }
+}
+}  // namespace wind
+
+```
+
+
+
+尽管核心思想较为简单, 但有些代码细节需要注意.
+
+
+
+首先注意到, 对于双端迭代器 `first` 和 `last` , 其区间是半实半开的, `first` 指向的是待排序区的第一个元素, 而 `last` 指向的是已归位区后半部分的第一个元素, 这是故意而为的--为了避免全实区间一起迭代, 相互叉开的情况, 假设现在我们使用的是全实区间的双端迭代器, 现在待排序区实际上已经排完, `A B`, 两个迭代器都指向他们, 现在如果他们一起迭代, 就会彼此查看, 命中不了"相等"的循环退出条件, 所以就死循环了. 而采用半实半开区间的方式, 就能很好描述和判断空区间.
+
+
+
+在两个迭代器都分步迭代后, 再进行以此判断, 是为了排除待排序区只有一个元素的情况, 那样自然是不需要再进行排序的.
+
+
+
+随后, 我们将待排序区最左边和最右边的元素作为比较基准, 去判断中间元素中是否有更适合放到一端的, 不过, 在那之前, 还需要再比较一下这两端, 避免基准失真的情况--如果不比较的话, (假设我们想要的升序), 左边可能是更大的数值, 而右边可能是更小的数值, 那意味着如果触发交换, 还要把交换过来的重新进行比较, 看看能不能放到最右端, 所以就不能写成 if lese, 而是两个 if, 那会让逻辑很混乱, 并且, 最后还是要比较一下两端, 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 选择排序非常简单。但效率太低了。它的思想是从数组中找出一个极值，把它放到应有的位置上，然后从剩余部分再找极值，依次类推。
 
 我们稍微优化一下，每轮比较把最大值和最小值都找出来。我们通过交换把这两个极值放在合适的位置上：
@@ -1066,6 +1193,22 @@ int main()
 ![image-20240904153338179](https://img.mdwind.online/md/202409041533321.png)
 
 ### 堆排序
+
+
+
+堆排序目前略: 因为他需要堆这个数据结构的支持--而我的公开文章中目前并没有说过堆. 他被安排在后面.
+
+
+
+
+
+
+
+
+
+
+
+
 
 之前说过堆排序，就在《二叉树和堆》那个项目下，这里再简单地回顾一下。
 
@@ -1171,6 +1314,129 @@ int main()
 
 这两个指针采取“异步”的方式寻找目标，即某个指针（比如A）找到目标后，再让另一个指针（B）寻找自己的目标，在交换数值后，另一个指针（A）再寻找目标。指针最初的移动顺序也有讲究。当要生成升序数组时，由于基准值最后是通过与相遇位置成员进行数值交换才来到应有位置的，而基准值又默认为第一个成员的数值，所以必须要确保被基准值交换的成员数值是小于基准值的，为此，必须先让`right`指针先进行移动；当`left`与`right`相遇时，由于`right`先进行移动，所以绝大多数情况下，都是`right`先找到目标，然后`left`在寻找自己对应目标的过程中与`right`相遇，这意味这相遇位置的成员数值必然是小于基准值的。同理，若将基准值设置为最后一个成员，则必须先让`left`先走，以确保相遇位置的数值大于基准值。也就是说，两指针的移动顺序与基准值的位置有关。
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
+
+**快速排序演示（以首元素为基准分区）**
+
+以升序为例，观察 `last` 怎样先向左找小于基准的元素，`first` 又怎样向右找大于基准的元素。若两端还没相遇，就交换这两个放错边的元素。视频分别演示了两种相遇方式，并用 `[1, 2]` 说明为什么要让 `first` 从 `key` 开始。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261122153622125.mp4"></video>
+
+[打开图床视频](https://img.mdwind.online/img/20261122153622125.mp4)
+
+https://github.com/user-attachments/assets/42bf57a0-6edb-4ccc-abc4-5092130a9818
+
+
+
+
+
+### 以第一个元素为基准进行分区
+
+我们先以升序为例。选定第一个元素作为基准后，希望把序列分成三部分：左边的元素都小于等于基准，中间是基准本身，右边的元素都大于等于基准。为此，可以准备两个迭代器，从区间两端向中间扫描，另用 `key` 记住基准的位置。
+
+区间是左闭右开的 `[first, last)`。一开始，`last` 指向尾后位置，所以它要**先向左走一步，再比较**，直到找到一个严格小于基准的元素。`first` 已经指向一个元素，所以它**先比较，再向右走**，直到找到一个严格大于基准的元素。如果两个迭代器还没相遇，就交换它们所指的元素。这样，左侧当前位置换进了一个比基准小的元素，右侧当前位置换进了一个比基准大的元素。
+
+### 两个迭代器相遇时
+
+如果是**左侧追上右侧**，说明右侧已经找到了一个小于基准的元素，左侧刚好走到这里。于是可以把基准换到相遇位置，让这个较小的元素回到区间开头。
+
+如果是**右侧退到左侧**，就要看此前有没有进行过交换。如果还没交换过，`first` 仍在 `key` 上，右侧一路退回来，基准原地归位。如果已经交换过，`first` 当前位置上的元素就是上一次从右边换来的，它严格小于基准，所以也可以和基准交换。最后返回基准归位后的迭代器。
+
+### 为什么一开始不跳过 `key`
+
+乍一看，可以先做一次 `++first`，把基准和扫描区间分开。但拿 `[1, 2]` 试一下，右侧会在 `2` 的位置碰到左侧边界。它停下来是因为已经走到了头，此时 `2` 依然大于基准 `1`。如果照常交换，原本有序的序列就会变成 `[2, 1]`。所以这里让 `first` 从 `key` 开始，给右侧保留一路退回基准位置的可能。
+
+还有一个细节。`advance` **恰好走到边界时仍返回 `0`**。以单元素区间为例，`last` 第一次回退恰好来到 `key`，接着还会拿基准和自身比较一次。再次回退才会因为走不动而返回 `-1`。左侧尝试前进同样走不动，返回 `1`。最后两个迭代器都停在 `key`，直接返回这个位置。空区间则可以由外层快排直接处理。
+
+
+
+```cpp
+#pragma once
+
+#include <iterator>
+
+#include "operations.hpp"
+
+namespace wind {
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+It partition_by_swap(It first, It last, Compare cmp = {}) {
+    auto key = first;
+
+    while (first != last) {
+        while (!std::ranges::advance(last, -1, first) && !cmp(*key, *last));
+        while (!cmp(*first, *key) && !std::ranges::advance(first, 1, last));
+        if (first != last) std::ranges::iter_swap(first, last);
+    }
+    if (key != last) std::ranges::iter_swap(key, last);
+    return last;
+}
+
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void Hoare_sort(It first, It last, Compare cmp = {}) {
+    if (first == last) return;
+
+    auto key = partition_around_first(first, last, cmp);
+    Hoare_sort(first, key, cmp);
+    Hoare_sort(std::next(key), last, cmp);
+}
+}  // namespace wind
+
+```
+
+
+
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 除此之外，另一种特殊情况，先行指针在遍历完整个选中数组后仍没有找到目标，此时两指针直接在基准值相遇，但由于指针相遇位置与基准值位置相同，所以数值交换不会产生有效影响。
 
 对于和基准值相同的数值成员，两指针不会进行任何响应（不视为目标），而是交由后续轮次排序处理。
@@ -1243,6 +1509,88 @@ int main()
 
 第二种，填坑法。
 
+
+
+
+
+**快速排序演示（挖坑填坑法）**
+
+以 `[5, 8, 2, 7, 3]` 为例，先取出首元素作为基准，再从两端交替填坑。每填一次，元素原来的位置就成了下一个坑。两端相遇时，把基准填回最后一个坑。
+
+约 33 秒处换用 `std::unique_ptr<int>` 演示。`key` 接管首元素所指的整数后，原槽位变成 `nullptr`。这时先判断 `first == last`，就能在两端相遇时跳过比较，避免解引用空指针。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261122225558556.mp4"></video>
+
+[打开图床视频](https://img.mdwind.online/img/20261122225558556.mp4)
+
+https://github.com/user-attachments/assets/f401b025-9321-4933-8b58-7d5f02750154
+
+
+
+对于填坑法来说, 在代码逻辑上更容易进行控制, 但是相对于之前我们写的原教旨快速排序, 霍尔法的 C++ 代码来说, 填坑法的代码就不是那么优雅简洁了. 在这里, 我们采用了移动语义来进行覆写, 赋值的行为, 这里用到的新的接口 `std::ranges::iter_move` 是将迭代器指向的元素表示为右值形式返回, 所以命中了移动语义, 不过移动语义倒也引入了新的坑. 对于 last 来说, 变化不大, 仍旧是先移动, 再判断是否到边界, 再进行比较, 但是我们看到, 对于 first 来说, 其循环条件则也写成了先判断是否到达边界, 再去比较... 这是特意这样写的, 如果用原先霍尔法的顺序, 结合移动语义可能出现问题: 这种场景也不能说是非正常的用法, 其实也很常见的, 那就是采用间接存储的方式来往容器里面装元素, 容器存储的并不是元素的本体, 而是指向元素的指针(而且这里大概率不是原生指针, 而是被包装的指针对象, 至于原因, 时候到了我们自然会说), 对于这种存储形式, 自定义比较器的逻辑大概是解引用迭代器, 找到里面存的地址, 地址再解引用, 找到元素, 进行比较, 如果是原生指针, 那其实问题不大, 因为原生指针是内置类型, 他们没有完善的移动语义, 所以移动实际上还是采用赋值的行为, 但问题是, 这里大概率不会是原生指针, 而是一些对指针进行了再包装的指针对象类型, 比如视频中的 `std::unique_ptr`,  对于这些指针包装器来说, 他们的移动语义接口当然是完善的, 所以移动之后, 会把自身存储的指针置为空, 这时候, 如果再参与比较, 比较方法里面再解引用出包装指针, 包装指针再解引用, 就是对空指针进行解引用了, 所以在这里, 我们特意调整了 first 的循环条件顺序: 当 last 一路狂奔, 直接到 first, 尽管 first 目前已经是一个空指针, 但是由于已经到达边界, 命中 `first == last`, 所以 `&&` 短路, 后面的比较就不会进行.
+
+
+
+
+
+```cpp
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+It partition_with_hole(It first, It last, Compare cmp = {}) {
+    using value_type = std::iter_value_t<It>;
+
+    value_type key(std::ranges::iter_move(first));
+    auto hole = first;
+
+    while (first != last) {
+        do {
+            --last;
+        } while (first != last && !cmp(key, *last));
+        if (first != last) {
+            *hole = std::ranges::iter_move(last);
+            hole = last;
+        }
+        while (first != last && !cmp(*first, key)) ++first;
+        if (first != last) {
+            *hole = std::ranges::iter_move(first);
+            hole = first;
+        }
+    }
+    *last = std::move(key);
+    return last;
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 从上面的学习中，可以看到霍尔法有很多坑，于是就有人以霍尔法的思想为指导，创造出了填坑法。
 
 填坑法与霍尔法的主要区别就是数据的传递方式的不同。霍尔法的数据传递方式是交换，而填坑法的数据传递是覆写。
@@ -1305,6 +1653,93 @@ int main()
 ![image-20240906092011072](https://img.mdwind.online/md/202409060920225.png)
 
 第三种方法，没有统一的命名，依据思路，要不叫它“跟屁虫法”或者“搜索法”？
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**同向双指针分区演示**
+
+以 `[6, 1, 9, 7, 4, 6, 5]` 为例，观察 `scan` 如何把小于基准的元素“甩进”左区，以及扫描结束后 `key` 如何与 `boundary` 交换位置。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261123001532929.mp4"></video>
+
+https://github.com/user-attachments/assets/66c8115c-6178-4a22-9da6-1d083c7f2c03
+
+
+
+以升序为例，同向双指针在扫描过程中维护两个区间。`(key, boundary]` 存放严格小于基准的元素，`(boundary, scan)` 存放已经扫过、大于等于基准的元素。每当 `scan` 找到一个小于基准的元素，就先让 `boundary` 向前走一格，再把这个元素交换到新扩出来的位置。如果 `boundary` 恰好追上了 `scan`，说明这个元素已经在该在的位置，只推进边界就够了。
+
+扫描结束后，只要小值区里有元素，`boundary` 指向的就是最后一个小值的位置。此时把它和 `key` 交换，较小的元素去了区间开头，基准到了小值区的末尾。于是基准左边全是小于它的元素，右边全是大于等于它的元素。如果一个小值也没找到，`boundary` 就一直和 `key` 重合，基准留在原位。
+
+
+
+
+
+```cpp
+template <std::forward_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+It partition_with_forward_scan(It first, It last, Compare cmp = {}) {
+    auto key = first;
+    auto boundary = first;
+
+    for (auto scan = std::next(first); scan != last; ++scan) {
+        if (cmp(*key, *scan)) {
+            ++boundary;
+            if (boundary != scan) {
+                std::ranges::iter_swap(boundary, scan);
+            }
+        }
+    }
+
+    if (key != boundary) {
+        std::ranges::iter_swap(key, boundary);
+    }
+    return boundary;
+}
+```
+
+
+
+这里是同向的, 因此迭代器约束也变成了前向迭代器
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 在搜索法中，同样有两个指针，一个指针负责搜索目标，另一个指针负责尾随前一个指针。还是以数组首元素为基准值，搜索指针会寻找比基准值小的数据，找到一个，尾随指针就会向后移动一位，然后这两个指针指向的内存块就会交换数值，当搜索指针跑出数组后，尾随指针指向的内存块就会和基准值交换。
 
@@ -1384,6 +1819,14 @@ static int Search_mode(pSortData pArray, int left, int right)
 
 ![image-20240906132723453](https://img.mdwind.online/md/202409061327706.png)
 
+
+
+这是新图, 他将代替原来的旧图.
+
+![quicksort-time-complexity](https://img.mdwind.online/img/20261123003048181.png)
+
+
+
 每个节点就可以被视为一个函数栈帧，一共有$log_2N$层，每一层所选中数组部分合在一块就相等于整个数组，所以每层都是$N$，再乘一下，于是就得到时间复杂度$O(N*log_2N)$。
 
 最坏情况是什么呢？那就是每次选中的基准值都恰好是极值，此时的函数栈帧更像是链表而非树，每层的复杂度仍是$N$，但此时深度已经变成了$N$，所以复杂度就变成了$O(N^2)$。
@@ -1391,6 +1834,151 @@ static int Search_mode(pSortData pArray, int left, int right)
 前面说过，基准值实际是可以任意选择的，所以为了避免出现最坏情况，就可以对快速排序进一步优化：
 
 我们先挑出三个预选值，分别是数组末尾，开头，中间，然后选择中间的那一个。但如果直接在单轮排序上修改就太麻烦了，所以我们的实际操作是先把三个数中间的那个数找出来，然后让它与数组首元素进行数值交换。
+
+
+
+我们先写一个辅助性的接口, 输入三个迭代器及其比较方法, 他会返回排列在中间的那个迭代器
+
+
+
+```cpp
+template <std::input_iterator It, class Compare>
+It median_of_three(It a, It b, It c, const Compare& cmp) {
+    if (cmp(*a, *c)) {
+        std::swap(a, c);
+    }
+
+    if (cmp(*a, *b)) {
+        return a;
+    }
+
+    if (cmp(*b, *c)) {
+        return c;
+    }
+
+    return b;
+}
+```
+
+
+
+cmp(x, y) 为真表示 x 应当在 y 后面, 第一次比较是确保 c 一定在 a 后面, 把这个作为已知条件, 如果确定 a 也在 b 后面, 则正确顺序是 b a c , 所以返回 a, 如果不是, 则意味着 b 在 a 后面, 但我们不能确定, b 是不是还在 c 后面, 所以再进行比较, 如果 b 在 c 后面, 那么自然就是 a c b , 所以返回 c , 如果还不是, 那么说明 c 在 b 后面, 所以返回 b
+
+
+
+另外, 这里比较器用的是常引用, 之前我不用常引用并不是什么特别的原因, 而是我纯粹忘记加了.
+
+
+
+
+
+另外要说的是, 对于起码是前向迭代器来说. 我们可以通过快慢指针的方式找到位于中间位置的迭代器
+
+
+
+```cpp
+template <std::bidirectional_iterator It, class Compare>
+It choose_pivot(It first, It last, const Compare& cmp) {
+    auto fast = first;
+    auto mid = first;
+    auto tail = std::prev(last);
+
+    while (!std::ranges::advance(fast, 2, last)) ++mid;
+
+    if (mid == tail) return first;
+
+    return median_of_three(first, mid, tail, cmp);
+}
+
+```
+
+
+
+
+
+这个函数模板负责找基准, 也就是 `pivot`, 在快速排序中一般被译作基准. 这里还有一个问题, 有没有可能区间里面不足三个元素? 在这里我们是通过判断找到到 mid 和最后一个元素的位置 tail 是否相同来判读的, 由于我们这种做法是取靠右的中间迭代器(偶数元素的区间, fast 最后会落到两个元素中更右边的那个, 比如对于仅有两个元素的区间来说, mid 会落到第二个元素上), 如果 mid 和 tail 相同, 就意味着他们不足三个元素, 此时没必要再调整基准值, 用原来的第一个就可以了, 所以直接返回 first, 而元素区间够的情况下, 就会复用之前的 `median_of_three`, 返回一个排在中间的迭代器
+
+
+
+```cpp
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>,
+          class Partition = It (*)(It, It, const Compare&)>
+    requires std::indirectly_swappable<It, It>
+void Hoare_sort(It first, It last, const Compare& cmp = {},
+                const Partition& partition = partition_by_swap<It, Compare>) {
+    if (first == last || std::next(first) == last) return;
+
+    auto pivot = choose_pivot(first, last, cmp);
+    if (pivot != first) {
+        std::ranges::iter_swap(first, pivot);
+    }
+
+    auto key = partition(first, last, cmp);
+    Hoare_sort(first, key, cmp, partition);
+    Hoare_sort(std::next(key), last, cmp, partition);
+}
+```
+
+
+
+对于最后的上层方法, 也进行了调整, 一方面是用上常引用了, 另一方面我们将下层的单过程以参数的方式进行了传入.
+
+
+
+
+
+接下来我们测试一下, 考虑到测试细说又是另外一个东西, 并且我用的是 Boots_Test, 你们也可能没有, 所以我就不贴测试代码了
+
+
+
+
+
+
+
+### 递归版快速排序的实测
+
+实现三数取中后，我们先在 `ubuntu-asus` 上测试递归版快速排序。正确性测试覆盖了 `std::vector` 和 `std::list`，数据统计统一使用 `std::list<int>`，分别测试升序、逆序、乱序和全相等的输入。两个测试用例均通过。
+
+下表取交换法的一部分输出。比较次数包含三数取中时的比较，最大划分深度只统计真正执行划分的递归层，空区间和单元素区间直接返回。
+
+| 元素个数 | 输入   | 比较次数  | 划分次数 | 最大划分深度 |
+| -------- | ------ | --------- | -------- | ------------ |
+| 4096     | 升序   | 51,211    | 2,048    | 12           |
+| 4096     | 乱序   | 66,620    | 2,336    | 20           |
+| 4096     | 逆序   | 2,110,461 | 2,048    | 1,025        |
+| 1024     | 全相等 | 528,888   | 1,023    | 1,023        |
+| 2048     | 全相等 | 2,106,360 | 2,047    | 2,047        |
+| 4096     | 全相等 | 8,407,032 | 4,095    | 4,095        |
+
+先看 4096 个元素的升序和逆序输入。两组都划分了 2048 次，最大深度却分别是 12 和 1025。**划分次数统计整棵递归树做了多少次划分，递归深度看的是其中最长的一条调用链。** 三数取中能让这组逆序输入的第一轮划分接近均衡，后续每轮的基准仍要从各自子区间的三个候选里重新选，划分依旧可能失衡。
+
+全相等的情况更直观。三个候选的值都一样，选谁作基准效果都一样。用目前的交换法、填坑法和同向扫描法，基准每轮都归到当前区间的首位，下一轮只少一个待排序元素。输入规模从 1024 增加到 2048，再增加到 4096，三种写法的最大划分深度都依次达到 1023、2047 和 4095，比较次数每次都接近翻四倍。
+
+### 递归写法的缺点
+
+回到递归代码。每次划分完成后，先递归处理基准左侧，等左侧返回，再处理右侧。只要下层调用还没返回，上层调用就还在等待。图的左边用 7 个元素演示这个调用顺序，右边画出全相等输入下那条不断向下延伸的调用链。
+
+
+
+![quick-sort-recursion-depth](https://img.mdwind.online/img/20261123022556675.png)
+
+
+
+划分比较均衡时，递归层数随输入规模按对数增长。像全相等这组输入，每轮只归位一个元素，调用链就可能随输入规模线性增长。本次测试正常跑完，实测到的是 **4095 层划分深度**。如果继续增大输入，层层嵌套的函数调用就有可能耗尽线程的调用栈。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```c
 int middle_of_three(pSortData pArray, int left, int right)
@@ -1491,6 +2079,91 @@ int main()
 
 刚刚我们就看到了递归的缺点，当递归过深后，就容易出现栈溢出，所以接下来我们要以非递归的方式实现快速排序。
 
+
+
+快排不怎么在意顺序, 所以无论是深度优先搜索 `dfs` 或者说是广度优先搜索 `bfs`, 都是可以的, 不过, 采用 `dfs` 更加合适, 毕竟我们采用非递归方式实现快排, 主要是为了防止递归过程中调用链过长的问题. 不过这里是排序算法专题, 所以我不会再深度讨论 `bfs` 和 `dfs` 了
+
+
+
+其中用到的数据结构, stack queue 都还没说, 所以实在不行, 你跳过非递归, 之后说完再看也是可以的.
+
+
+
+```cpp
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>,
+          class Partition = It (*)(It, It, const Compare&)>
+    requires std::indirectly_swappable<It, It>
+void quick_sort_dfs(It first, It last, const Compare& cmp = {},
+                    const Partition& partition = partition_by_swap<It, Compare>) {
+    using stack = std::stack<std::pair<It, It>>;
+    stack s;
+    s.emplace(first, last);
+
+    while (!s.empty()) {
+        auto [begin, end] = s.top();
+        s.pop();
+
+        if (begin == end || std::next(begin) == end) continue;
+
+        auto pivot = choose_pivot(begin, end, cmp);
+        if (pivot != begin) {
+            std::ranges::iter_swap(begin, pivot);
+        }
+
+        auto key = partition(begin, end, cmp);
+        s.emplace(std::next(key), end);
+        s.emplace(begin, key);
+    }
+}
+
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>,
+          class Partition = It (*)(It, It, const Compare&)>
+    requires std::indirectly_swappable<It, It>
+void quick_sort_bfs(It first, It last, const Compare& cmp = {},
+                    const Partition& partition = partition_by_swap<It, Compare>) {
+    std::queue<std::pair<It, It>> pending;
+    pending.emplace(first, last);
+
+    while (!pending.empty()) {
+        auto [begin, end] = pending.front();
+        pending.pop();
+
+        if (begin == end || std::next(begin) == end) continue;
+
+        auto pivot = choose_pivot(begin, end, cmp);
+        if (pivot != begin) {
+            std::ranges::iter_swap(begin, pivot);
+        }
+
+        auto key = partition(begin, end, cmp);
+        pending.emplace(begin, key);
+        pending.emplace(std::next(key), end);
+    }
+}
+```
+
+
+
+这里我们用的是 `pair`, 也就是一对来存储区间迭代器, emplace 用的是完美转发, 那是之后的知识了, 现在只需要认为, `emplace` 可以以更简便, 更灵活的方式进行 `push`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 先让我们想一想当初为什么偏要用递归的方式去实现快排。其实很简单，就是利用递归把函数栈帧以树状的形式组织起来，然后用单轮排序返回的下标值把它们联系起来。
 
 还是回到霍尔法，以动图中的数组[  6,1,2,7,9,3,4,7,10,8 ]为例。图中，蓝色文本数字表示数组下标，蓝红色序列号表示先后顺序。
@@ -1568,6 +2241,232 @@ int main()
 在某些极端情况下，上述三种的快速排序可能会全部失效。什么情况呢？那就是整个数组的所有成员的数值都相同。此时，比如说，`right`就会去寻找比基准值小的数，可是，很明显，它找不到，于是它就越界了。
 
 为此，就有了“三路划分”。三路划分和以往的三套方法相比，有些根本上的不同。三路划分不像上述三套方法一样，对等于基准值的数值视而不见，而是想办法，把这些数值移到中间。于是在经过一轮排序之后，数组就可以被分成三个部分：左边的部分，存放着比基准值小的数值；中间的部分，存放着和基准值相同的数值；右边的部分，存放着比基准值大的值。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 三路划分
+
+
+
+
+
+**三路划分演示**
+
+以 `[6, 2, 6, 9, 3, 6, 8, 4]` 为例，观察 `9` 被换到右侧后，`scan` 为什么要留在原地判断换回来的 `4`，以及最后如何让基准与另外两个 `6` 连成等价区间 `[3, 6)`。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261123041047790.mp4"></video>
+
+https://github.com/user-attachments/assets/4e5ce78e-27ba-4e31-9dcb-318caee7d08c
+
+
+
+
+
+三路划分是针对存在与基准值相同的元素所做的一种优化。以升序为例，我们希望一轮划分结束后，左边全是小于基准值的元素，中间全是与基准值相等的元素，右边全是大于基准值的元素。这样，接下来就可以跳过中间这段区间，只对左右两侧继续排序。
+
+实际操作时，我们仍然用第一个元素作为基准值，让它在扫描过程中留在 `first`。对剩下的区间，我们用三个迭代器来处理。`scan` 指向当前要判断的元素，`before_end` 是小值区的尾后位置，也是相等区间的起点，`after_begin` 则是大值区的起点。扫描过程中，`[before_end, scan)` 里的元素都与基准值相等。如果这个区间为空，`before_end` 就和 `scan` 重合。
+
+当 `scan` 指向的元素**小于基准值**时，就把它和 `before_end` 所指的元素交换。两者分开时，从 `before_end` 换回来的值已经知道与基准值相等，所以 `scan` 可以直接向后走一步。与此同时，`before_end` 的位置刚刚放进了一个小于基准值的元素，它也要向后走一步，重新指向相等区间的起点。如果两者本来就重合，省去交换，两者照样一起向后走。
+
+当 `scan` 指向的元素**大于基准值**时，就把它放到右边。`after_begin` 指向的是大值区已有的起点，所以要先向前退一步，再和 `scan` 所指的元素交换。这里 `scan` 要留在原地，因为从右侧换回来的元素还不知道有多大，下一轮还要判断它。如果 `after_begin` 退完恰好与 `scan` 重合，当前元素已经在该放的位置上，省去交换即可。
+
+如果两个方向的比较都不成立，在比较器满足严格弱序的前提下，当前元素就与基准值等价。这时只让 `scan` 向后走一步，`before_end` 留在原地，中间的相等区间就增加了一个元素。
+
+当 `scan` 和 `after_begin` 相遇时，剩余区间已经扫描完了，但基准值还留在首位。为了让它和中间的相等区间接起来，我们从 `before_end` 往回退一步。如果小值区有元素，这一步就落到小值区的最后一个元素上，把它和首元素交换，基准值便归入中间区间。如果小值区为空，退一步刚好回到 `first`，基准值已经在该在的位置上。最后返回相等区间的两个边界 `[equal_first, after_begin)`，外层就可以据此取出左右两个区间继续排序。
+
+
+
+
+
+
+
+```cpp
+template <std::bidirectional_iterator It, class Compare>
+    requires std::indirectly_swappable<It, It>
+std::pair<It, It> partition_three_way(It first, It last, const Compare& cmp) {
+    auto before_end = std::next(first);
+    auto scan = before_end;
+    auto after_begin = last;
+
+    while (scan != after_begin) {
+        if (cmp(*first, *scan)) {
+            if (before_end != scan) {
+                std::ranges::iter_swap(before_end, scan);
+            }
+            ++before_end;
+            ++scan;
+        } else if (cmp(*scan, *first)) {
+            --after_begin;
+            if (scan != after_begin) {
+                std::ranges::iter_swap(scan, after_begin);
+            }
+        } else {
+            ++scan;
+        }
+    }
+
+    auto equal_first = std::prev(before_end);
+    if (equal_first != first) {
+        std::ranges::iter_swap(first, equal_first);
+    }
+
+    return {equal_first, after_begin};
+}
+
+template <std::bidirectional_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::indirectly_swappable<It, It>
+void quick_sort_three_way(It first, It last, const Compare& cmp = {}) {
+    std::stack<std::pair<It, It>> pending;
+    pending.emplace(first, last);
+
+    while (!pending.empty()) {
+        auto [begin, end] = pending.top();
+        pending.pop();
+
+        if (begin == end || std::next(begin) == end) continue;
+
+        auto pivot = choose_pivot(begin, end, cmp);
+        if (pivot != begin) {
+            std::ranges::iter_swap(begin, pivot);
+        }
+
+        auto [equal_first, equal_last] = partition_three_way(begin, end, cmp);
+
+        pending.emplace(equal_last, end);
+        pending.emplace(begin, equal_first);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 在三路划分中，将会有三个指针：`left right curr`。`left`和`right`的初始位置仍然在数组两端，依旧把数组首元素视为基准值，`curr`最开始将会位于第二个成员处。之后`curr`将会对数组成员进行遍历，对于小于基准值的成员，将会与`left`指向的成员进行数值交换，这样做有两个目的：一是把比基准值小的数移到左边，二是把比基准值相同的数值往中间移；在进行完数值交换之后，`left`和`curr`都会向下移动一位；对于等于基准值的数，`curr`会直接移到下一位，将这些与基准值相同的成员交给`left`日后处理；如果成员大于基准值，`curr`指向的成员就会与`right`指向的成员进行数值交换，这样比基准值大的数值就被移到了右边，不过，由于不知道从`right`那边移过来的数值到底是什么情况，所以`curr`不会向后移一位，当然`right`确实会向前移一位；当`curr`到达`right`的右边时，就意味着，整个数组的全部成员都已经被`curr`遍历，比较过了，于是，这轮比较就结束了。
 
