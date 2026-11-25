@@ -2572,6 +2572,262 @@ int middle_of_three(pSortData pArray, int left, int right)
 
 ### 归并排序
 
+
+
+
+
+
+
+
+
+**归并排序演示（递归交换版）**
+
+以 `[4, 2A, 3, 1, 2B]` 为例，观察区间如何在递归过程中不断拆分，以及如何在回溯过程中复用同一片暂存空间完成归并。同时观察相等元素 `2A` 和 `2B` 的相对次序，体会归并排序的稳定性。
+
+<video controls preload="metadata" width="720" src="https://img.mdwind.online/img/20261125141841265.mp4"></video>
+
+https://github.com/user-attachments/assets/5ad6aceb-44ec-4054-9451-f57a8bd78303
+
+
+
+```cpp
+#pragma once
+
+#include <iterator>
+#include <vector>
+
+#include "operations.hpp"
+
+namespace wind {
+template <std::random_access_iterator It, class Compare>
+    requires std::indirectly_swappable<It, typename std::vector<std::iter_value_t<It>>::iterator>
+void _merge_sort(It first, It last, std::vector<std::iter_value_t<It>>& tmp, const Compare& cmp) {
+    if (first == last || std::next(first) == last) return;
+
+    auto mid = first + (last - first) / 2;
+
+    _merge_sort(first, mid, tmp, cmp);
+    _merge_sort(mid, last, tmp, cmp);
+
+    auto begin1 = first;
+    auto begin2 = mid;
+    auto begin3 = tmp.begin();
+
+    while (begin1 != mid && begin2 != last) {
+        if (cmp(*begin1, *begin2)) {
+            std::ranges::iter_swap(begin3, begin2);
+            ++begin2;
+            ++begin3;
+        } else {
+            std::ranges::iter_swap(begin3, begin1);
+            ++begin1;
+            ++begin3;
+        }
+    }
+
+    while (begin1 != mid) {
+        std::ranges::iter_swap(begin3, begin1);
+        ++begin1;
+        ++begin3;
+    }
+    while (begin2 != last) {
+        std::ranges::iter_swap(begin3, begin2);
+        ++begin2;
+        ++begin3;
+    }
+
+    begin3 = tmp.begin();
+    while (first != last) {
+        std::ranges::iter_swap(first, begin3);
+        ++first;
+        ++begin3;
+    }
+}
+
+template <std::random_access_iterator It, class Compare = greater<std::iter_value_t<It>>>
+    requires std::default_initializable<std::iter_value_t<It>> &&
+             std::indirectly_swappable<It, typename std::vector<std::iter_value_t<It>>::iterator>
+void merge_sort(It first, It last, const Compare& cmp = {}) {
+    if (first == last || std::next(first) == last) return;
+
+    std::vector<std::iter_value_t<It>> tmp(last - first);
+    _merge_sort(first, last, tmp, cmp);
+}
+}  // namespace wind
+
+```
+
+
+
+由于 `std::vector::resize` 用的是无参默认构造, 所以在外层接口我们用概念强调了一下, 要求支持默认无参构造. 除此之外, 在求中点的时候还需要注意一下 mid 的求法, 这里是不可以加一的, 否则对于两个元素, 前面两个区间就是 [0, 2), 后面就是空的, 这会导致区间长度不能缩小, 一直重复调用, 导致栈溢出.
+
+
+
+归并排序的核心思想很简单，就是如何将两个已经有序的序列合并成一个更大的有序序列。
+
+当然，我们首先需要解决一个问题，这两个有序序列从哪里来？其实也很简单。对于任意一个待排序区间，我们可以不断地将其从中间划分为两个子区间，并采用深度优先的方式递归处理，直到区间中只有一个元素，或者区间为空(但实际上中途不能为空, 那意味着中间有个划分区间长度始终不缩小)。这样的区间自然可以视为有序区间。
+
+随后，随着递归逐层返回，我们将两个已经有序的子区间进行归并，使其形成一个更大的有序区间，再将其交给上一层继续归并，直至整个序列有序。
+
+因此，**区间的划分发生在递归深入的过程中，而真正的排序发生在递归回溯的过程中。** 这也体现了归并排序的分治思想。
+
+从宏观上看，区间划分只是为归并创造条件，归并才是整个算法的核心操作。
+
+
+
+
+
+### 归并排序的末端优化
+
+归并排序的递归写法还有一些可以优化的地方。
+
+我们知道，递归调用可以从逻辑上组织成一棵树，每个节点对应一次函数调用。当归并排序输入的数据量较大时，这棵树就会产生大量细小的分支，而这些分支所对应的区间长度实际上已经很小了，没必要让它们一直划分到只有一个元素为止。
+
+于是，我们就可以设计一种机制，当区间长度小到一定程度时，直接调用其他排序算法将其排好序，使其能够参与后续的归并过程。
+
+这种优化的意义，还可以从递归树的结构上来看。
+
+假设归并排序的递归调用树恰好是一棵高度为 \(H\)（共 \(H\) 层）的满二叉树，那么整棵树的节点总数为：
+
+\[ 2^H-1 \]
+
+其中，最后一层的节点数为 \(2^{H-1}\)，倒数第二层的节点数为 \(2^{H-2}\)。
+
+| 递归层次   | 节点数      | 约占总节点数 |
+| ---------- | ----------- | ------------ |
+| 最后一层   | \(2^{H-1}\) | 50%          |
+| 倒数第二层 | \(2^{H-2}\) | 25%          |
+| 倒数第三层 | \(2^{H-3}\) | 12.5%        |
+
+可以看到，递归树越往下，每层所包含的节点就越多。因此，**尽管末端优化只减少了一两层递归深度，却能够省去大量的递归调用和小区间归并操作。**
+
+那么，到底该选择什么排序算法呢？
+
+这里我选择的是直接插入排序。毕竟这些待处理区间已经很小了，直接插入排序的实现简单，额外开销也小。另外，前面实现的直接插入排序是一种稳定的排序算法，因此也能够保留归并排序原有的稳定性。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+接下来我们把末端优化和非递归一块写了
+
+
+
+```cpp
+template <std::random_access_iterator It, class Compare>
+    requires std::indirectly_swappable<It, typename std::vector<std::iter_value_t<It>>::iterator>
+void _merge_sort(It first, It last, std::vector<std::iter_value_t<It>>& tmp, const Compare& cmp) {
+    if (first == last || std::next(first) == last) return;
+
+    auto ceil_div = [](auto n, auto d) { return n / d + (n % d != 0); };
+
+    size_t size = last - first;
+    size_t group_count = ceil_div(size, 10);
+
+    auto begin = first;
+    for (size_t i = 0; i < group_count; ++i) {
+        auto next_group = begin;
+        std::ranges::advance(next_group, 10, last);
+        insert_sort(begin, next_group, cmp);
+        begin = next_group;
+    }
+
+    size_t width_multiplier = 1;
+    while (group_count > 1) {
+        size_t merge_count = group_count / 2;
+        begin = first;
+        for (size_t i = 0; i < merge_count; ++i) {
+            auto left_curr = begin;
+            auto mid = left_curr;
+            std::ranges::advance(mid, width_multiplier * 10, last);
+            auto right_curr = mid;
+            auto end = right_curr;
+            std::ranges::advance(end, width_multiplier * 10, last);
+
+            auto buffer_curr = tmp.begin();
+
+            while (left_curr != mid && right_curr != end) {
+                if (cmp(*left_curr, *right_curr)) {
+                    std::ranges::iter_swap(buffer_curr, right_curr);
+                    ++right_curr;
+                    ++buffer_curr;
+                } else {
+                    std::ranges::iter_swap(buffer_curr, left_curr);
+                    ++left_curr;
+                    ++buffer_curr;
+                }
+            }
+
+            while (left_curr != mid) {
+                std::ranges::iter_swap(buffer_curr, left_curr);
+                ++left_curr;
+                ++buffer_curr;
+            }
+            while (right_curr != end) {
+                std::ranges::iter_swap(buffer_curr, right_curr);
+                ++right_curr;
+                ++buffer_curr;
+            }
+
+            buffer_curr = tmp.begin();
+            while (begin != end) {
+                std::ranges::iter_swap(buffer_curr, begin);
+                ++buffer_curr;
+                ++begin;
+            }
+        }
+        group_count = ceil_div(group_count, 2);
+        width_multiplier *= 2;
+    }
+}
+```
+
+
+
+对于归并排序的非递归写法，我们其实没有必要像快速排序那样，借助一个显式的栈来模拟递归过程。
+
+我们回顾一下归并排序的递归逻辑：递归的目的，是不断划分区间，直到得到一些已经有序的小区间，随后再自底向上地逐步归并。既然我们最终需要的是这些有序的小区间，那么为什么不直接从这些小区间开始呢？
+
+我们先将整个待排序区间按照长度为 10 进行分组，并借助插入排序使各组内部有序。接下来，将相邻的两个有序区间两两归并。每完成一轮归并，有序区间的标准长度就会变为原来的两倍，而有序区间的数目则会减半（向上取整）。如果某一轮的区间数目为奇数，那么最后一个区间就不参与本轮归并，留到下一轮再进行处理。如此反复，直到整个待排序区间只剩下一个有序区间，排序也就完成了。
+
+如果从递归树的角度来看，递归写法是先自顶向下地划分，再自底向上地归并；而非递归写法则是直接从树的底部开始，逐层向上归并，省去了向下划分以及相应的函数调用过程。
+
+
+
+当然这里有些小细节, 比如有的要用向上取整的除法, 有的用向下取整的除法
+
+
+
+![bottom-up-merge-sort](https://img.mdwind.online/img/20261125165713983.png)
+
+
+
+
+
+
+
+
+
+除此之外，非递归归并排序还可以采用逐层写回的方式。它与上述代码的核心思想完全相同，区别仅在于写回原区间的时机：上述代码每完成一对有序区间的归并，就立即将结果写回原区间；而逐层写回则是让暂存区的写入迭代器持续向后移动，直到本轮所有区间归并完毕，再统一将结果写回原区间。需要注意的是，如果某一轮的有序区间数为奇数，那么最后一个未参与归并的区间也需要被转移到暂存区中。这两种写法在时间复杂度和空间复杂度上没有区别，因此这里就不再单独实现了。
+
+
+
+
+
+
+
+
+
 归并排序使用的仍是分治的思想，它先将整个数组分成若干个子数组，然后再将这些子数组作进一步的拆分，直到拆分出的子数组一定是有序的。什么叫“一定有序”，很简单，拆的只剩一个成员它不就自然有序了。比如，对于一个有10个成员的数组来说，它先把这10个数组拆分成2个大小为5的子数组，下标分别是0到4, 5到9；然后再进一步拆分，拆成4个数组，下标分别是0到2, 3到4，5到7, 8到9,；随后再拆分，变成下标为0到1， 1到2， 3, 4， 5到6,  6到7, 8, 9········
 
 拆成1个成员怎么办呢？比如现在已经有两个已经“被迫”（就一个成员吗）有序的数组了，第一个数组，有一个成员，是4；第二个数组，是1,；归并归并，就是归档，合并；于是我们先把这两个数组的首元素比较一下，我们发现，1是更小的，于是就把1拷贝到一个暂时的空间，然后第二个数组遍历完了，于是就把第一个数组剩下的部分，也就是那个6，拷贝到暂存空间中，然后再拷贝回去，这样，原数组的这两个子数组合并完了，于是，此时原数组的那个地方就变成了1,6；好的，现在已经有两个数组，这两个数组都有两个成员，第一个数组是1,6；第二个数组是3,8；然后呢，我们把这两个数组的首元素比较一下，我们发现，1更小是吧，就把1拷贝到暂存空间中，然后对比一下，第一个数组的第二成员和第二个数组的第一个成员，我们发现3更小，是吧，那就把3拷贝到暂存空间，然后再比较一下第一个数组和第二个成员的第二成员，我们发现6更小，于是拷贝到暂存空间，然后第一个数组没成员了，于是就把第二个数组的剩下部分再拷贝到暂存空间，此时暂存空间的这个地方就是1,3,6,8了，再把这地方拷贝会原数组的地方就行了。
@@ -2871,6 +3127,10 @@ int main()
 计数排序具体怎么做呢？
 
 它首先会将要排序的数组遍历一遍，从而确定要排序数据的大致范围，然后依据这个范围开辟一个数组，接着再次遍历排序数组，对这些数据进行计数，遍历完后，对开辟数组的计数进行展开，就能得到有序数组，好吧，还是看动图吧。
+
+
+
+以后我们会说哈希的, 所以现在就不说了.
 
   ![动画](https://img.mdwind.online/md/202409131459388.gif)
 
