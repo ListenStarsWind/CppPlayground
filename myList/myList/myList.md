@@ -1,5 +1,86 @@
 # myList
 
+## 链表的前置知识
+
+### 从连续存放到用指针维持顺序
+
+在 `vector` 里，逻辑上相邻的元素在内存里也相邻。知道起始地址和下标，就能直接找到元素。如果要在中间插入一个元素，即使还有容量，通常也得把插入位置及其后的元素往后挪。
+
+能不能让后面的元素留在原处？可以让每个元素所在的节点记住下一个节点的地址。原来是 A 接着 B，现在只需让 A 接到新节点，再让新节点接到 B。节点的地址可以分散，元素的顺序由链接维持。这就是**链式存储**。
+
+![顺序存储按下标定位，链式存储沿 next 指针访问同一序列](https://img.mdwind.online/img/20261128121330618.png)
+
+这也改变了定位的方式。要找链表的第 3 个元素，得从首节点沿指针走两步。**找到位置和修改链接的开销要分开计算。** 已知所需的节点时，插入或摘下一个节点通常只改固定数量的链接。从头寻找任意位置，最坏要遍历整条链。节点分配、元素的构造与销毁，以及分散访问的缓存局部性，也都会影响实际耗时。
+
+### 先用一个指针把节点串起来
+
+先只存整数。每个节点的 `value` 是**数据域**，用来存元素。`next` 是**指针域**，用来存后继节点的地址。链外还需要一个入口，也就是**头指针** `head`。在这个版本里，`head` 指向首个数据节点，尾节点的 `next` 是 `nullptr`。空表没有数据节点，`head` 也是 `nullptr`。
+
+```cpp
+#include <iostream>
+
+struct Node {
+    int value;
+    Node* next;
+};
+
+void print(const Node* head)
+{
+    for (const Node* curr = head; curr != nullptr; curr = curr->next)
+        std::cout << curr->value << ' ';
+}
+```
+
+假设已经拿到 A，要把新节点 X 插在它和 B 之间。先用 `X->next = A->next` 接住原有后继，再用 `A->next = X` 把 X 接进来。如果先改 A 的链接，原来的后继地址就得另外保存。反过来，要摘下 A 后面的 X，先用 `A->next = X->next` 让 A 绕过 X，再销毁摘下的节点。A 如果是尾节点，插入时接住的就是 `nullptr`，同样的写法仍然成立。
+
+![单向链表先让 X 指向原后继 B，再让 A 指向 X，摘链后 A 重新指向 B](https://img.mdwind.online/img/20261128121332352.png)
+
+刚才有两个条件。我们手里有前驱 A，而且 A 是个有效节点。如果手里只有待删除节点 X，要怎样找到 A？如果 X 已经是首节点，又有谁能替它保存链表的新入口？
+
+### 给节点加上前驱指针
+
+从 X 出发，`next` 能带我们找到 B。要修改 A 的链接，只有 X 的地址时，通常得从头找它的前驱。在 X 前面插入也会遇到同样的问题。
+
+给节点再添一个 `prev`，就能用 `X->prev` 直接拿到前驱，也可以沿 `prev` 反向遍历。这样得到的是**双向链表**。每个节点多存一个指针，插入或删除时也要维护两个方向的链接。
+
+![单向节点只有 next，双向节点有 prev 和 next，非循环链表的两端用 nullptr 表示边界](https://img.mdwind.online/img/20261128121332988.png)
+
+现在回到第二个问题。首节点的 `prev` 依然是 `nullptr`，改动首节点时还要单独更新头指针。
+
+### 在首节点之前留一个固定位置
+
+可以在首个数据节点之前加一个**头节点**，也叫**哨兵节点**。头指针 `head` 保存的是哨兵的地址，哨兵的 `next` 才保存首个数据节点的地址。哨兵参与链接，遍历时从它后面开始。空表仍有哨兵，在线性结构里，此时哨兵的 `next` 是 `nullptr`。
+
+![不带头时 head 指向首个数据节点，带头时 head 指向哨兵 HEAD](https://img.mdwind.online/img/20261128121333667.png)
+
+现在要在最前面插入一个节点，就按普通的后插步骤，把新节点接到哨兵后面。删除首个数据节点时，也能由哨兵绕过这个节点。整个过程中，`head` 始终指向同一个哨兵。图里用的是单向链表，因为固定入口和前驱指针是两个可以独立做出的选择。
+
+### 让尾节点接回开头
+
+非循环链表走到尾部，再沿 `next` 走一步会得到 `nullptr`。把尾节点的 `next` 接回开头，就形成了**循环链表**。不带头时接回首个数据节点，带头时可以接回哨兵。
+
+![非循环链表的尾节点指向 nullptr，循环链表的尾节点指回首节点](https://img.mdwind.online/img/20261128121334337.png)
+
+遍历也要换个结束条件。不带头的循环链表先判断是否为空，非空时记录出发节点，访问它之后沿 `next` 继续，回到出发节点就停。带哨兵时，从 `head->next` 起步，遇到哨兵便停止。空表会在进入遍历时直接遇到哨兵。
+
+### 用双向带头循环链表实现容器
+
+三个选择分别回答三个问题。节点能直接找到哪些邻居？链表有没有一个固定的哨兵？边界处的链接接到哪里？把前驱指针、哨兵和循环链接放在一起，就得到接下来要用的**双向带头循环链表**。
+
+![双向带头循环链表在空表时双向自连，非空时哨兵连接首尾数据节点](https://img.mdwind.online/img/20261128121334953.png)
+
+空表里，哨兵的 `next` 和 `prev` 都指回自己。非空时，沿哨兵的 `next` 能直接找到首节点，沿 `prev` 能直接找到尾节点。首节点的 `prev` 与尾节点的 `next` 则都接回哨兵。只有一个元素时，首尾是同一个数据节点，它的两个链接都指向哨兵。
+
+有了这种结构，在 `pos` 前插入只需把新节点接到 `pos->prev` 和 `pos` 之间。取哨兵为 `pos` 就是尾插。即使当前是空表，同样的重接步骤也能把第一个节点接进来。
+
+![双向链表插入 X 后维护两侧链接，删除 X 后重新接上 A 和 B](https://img.mdwind.online/img/20261128121335560.png)
+
+删除时，把数据节点的前驱和后继接回彼此，再销毁该节点。如果删掉的是唯一一个数据节点，两个邻居都是哨兵，重接后就恢复为双向自连。
+
+这也解释了后面会用到的两个位置。我们实现的容器中，`begin()` 对应哨兵的 `next`，`end()` 对应哨兵这个尾后边界。空表时两者相等，`end()` 不能解引用。
+
+接下来先看 `std::list` 对外提供怎样的接口。C++ 标准要求它支持双向迭代，并规定给定有效位置时插入或删除**单个元素**的复杂度为常数。内部结构由实现者决定。这里选择双向带头循环链表，是因为首尾能直接取得，表中和首尾也能共用同一套指针重接规则。
+
 ## `Feel`【感受】
 
 ### `documentation`【[文档](https://legacy.cplusplus.com/reference/list/list/)】
@@ -131,6 +212,52 @@ They are `very similar to`【非常相似】forward_list: `main difference being
 
 这三种迭代器之间是层层包含的关系，随机迭代器支持`+ - ++ --`，这意味着它必然也是双向迭代器(支持`++ --`)，同理，双向迭代器也是单向迭代器。
 
+
+
+```cpp
+#include <iostream>
+#include <list>
+
+#include "allocator.hpp"
+
+template <typename T>
+using list = std::list<T, wind::allocator<T>>;
+
+int main() {
+    list<int> lt;
+    lt.push_back(5);
+    lt.push_back(4);
+    lt.push_back(3);
+    lt.push_back(2);
+    lt.push_back(1);
+
+    lt.sort();
+
+    for (const auto& e : lt) {
+        std::cout << e << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+
+```
+
+
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+1 2 3 4 5 
+[wind@ubuntu-asus build]$ 
+
+```
+
+
+
+
+
+
+
 ```cpp
 void using1()
 {
@@ -153,7 +280,58 @@ void using1()
 }
 ```
 
-![image-20241029141112532](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291411742.png)
+![image-20241029141112532](https://img.mdwind.online/md/202410291411742.png)
+
+
+
+```cpp
+#include <iostream>
+#include <list>
+
+#include "allocator.hpp"
+
+template <typename T>
+using list = std::list<T, wind::allocator<T>>;
+
+int main() {
+    list<int> lt;
+    lt.push_back(5);
+    lt.push_back(4);
+    lt.push_back(3);
+    lt.push_back(2);
+    lt.push_back(1);
+
+    auto cmp = std::greater<int>();
+    lt.sort(cmp);
+
+    for (const auto& e : lt) {
+        std::cout << e << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+
+```
+
+
+
+当然, 在排序专题里面我们也说过, 标准库的默认排序采用升序, 如果你想采用降序的方式, 可以换成 `std::greater`, 注意, 我们之前在排序算法中也说过, 标准库默认比较器类型是`std::less`, 而我们之前实现的是`wind::greater`, 但是他们的最后效果都是升序, 这里只是看待的视角不同, 从而造成了不同的叫法, 但是内在是相同的道理
+
+
+
+```bash
+[wind@ubuntu-asus build]$ ./main-debug
+5 4 3 2 1 
+[wind@ubuntu-asus build]$ 
+
+```
+
+
+
+
+
+
 
 ```cpp
 void using1()
@@ -184,9 +362,9 @@ void using1()
 }
 ```
 
-![image-20241029141656613](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291416725.png)
+![image-20241029141656613](https://img.mdwind.online/md/202410291416725.png)
 
-`list`里的`sort`日常用的不多，它的效率比较低，实际上我们一般先用`list`里的迭代器区间实例化出一个`vector`，然后再用算法库里的`sort`，之后再写回来。
+`list`里的`sort`日常用的不多，它的效率比较低，实际上我们一般先用`list`里的迭代器区间实例化出一个`vector`，然后再用算法库里的`sort`，之后再写回来。在我们之前说的排序专题中, 也大致说过这样做的原因
 
 下面我们切换到`release`，进行性能测试。`debug`会增加许多调试信息从而干扰测试。
 
@@ -226,7 +404,7 @@ int main()
 }
 ```
 
-![image-20241029143527291](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291435412.png)
+![image-20241029143527291](https://img.mdwind.online/md/202410291435412.png)
 
 ```cpp
 int main()
@@ -236,7 +414,7 @@ int main()
 }
 ```
 
-![image-20241029144131762](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291441832.png)
+![image-20241029144131762](https://img.mdwind.online/md/202410291441832.png)
 
 实际上一般这样进行链表排序
 
@@ -274,7 +452,7 @@ int main()
 }
 ```
 
-![image-20241029144950547](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291449665.png)
+![image-20241029144950547](https://img.mdwind.online/md/202410291449665.png)
 
 #### 归并
 
@@ -308,7 +486,7 @@ void using3()
 }
 ```
 
-![image-20241029150607724](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291506808.png)
+![image-20241029150607724](https://img.mdwind.online/md/202410291506808.png)
 
 #### 移除特定元素
 
@@ -333,7 +511,7 @@ void using3()
 }
 ```
 
-![image-20241029150824375](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291508472.png)
+![image-20241029150824375](https://img.mdwind.online/md/202410291508472.png)
 
 `remove_if`也涉及到仿函数，所以先不说。
 
@@ -404,7 +582,7 @@ void using4()
 }
 ```
 
-![image-20241029152658676](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291526734.png)
+![image-20241029152658676](https://img.mdwind.online/md/202410291526734.png)
 
 
 
@@ -413,19 +591,19 @@ void using4()
 
 节点结构：
 
-![image-20241029171442165](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291714654.png)
+![image-20241029171442165](https://img.mdwind.online/md/202410291714654.png)
 
 `list`本体
 
-![image-20241029171718904](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291717321.png)
+![image-20241029171718904](https://img.mdwind.online/md/202410291717321.png)
 
 可以看出来，这应该是个带头的链表
 
-![image-20241029181820323](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291818767.png)
+![image-20241029181820323](https://img.mdwind.online/md/202410291818767.png)
 
 `_M_node`就是那个头结点，从初始化列表里可以看出来
 
-![image-20241029181954951](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202410291819273.png)
+![image-20241029181954951](https://img.mdwind.online/md/202410291819273.png)
 
 `_M_get_node()`就是通过空间分配器获得一个节点。
 
@@ -991,7 +1169,7 @@ void test5()
 }
 ```
 
-![image-20241101120727147](https://md-wind.oss-cn-nanjing.aliyuncs.com/md/202411011207255.png)
+![image-20241101120727147](https://img.mdwind.online/md/202411011207255.png)
 
 以后我们会学仿函数，就可以让本不支持io重载的`*it`变得可以被流插入，流提取，这样就真的什么都可以用了。
 
